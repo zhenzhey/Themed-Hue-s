@@ -18,7 +18,7 @@ function Avatar({ avatarColor, name, size = 'md' }) {
 
 // ─── Lobby View ───────────────────────────────────────────────────────────────
 
-function LobbyView({ room, profile, onStartRound, onLeave }) {
+function LobbyView({ room, onStartRound, onLeave }) {
   const [copied, setCopied] = useState(false);
 
   function copyCode() {
@@ -236,7 +236,7 @@ function PlayingView({ myColor, wrongGuess, skippedInfo, onSubmitGuess, onSkipGu
 
 // ─── Round Result View ────────────────────────────────────────────────────────
 
-function ResultView({ roundResult, room, onReturnToScoreboard }) {
+function ResultView({ roundResult, room, onStartRound }) {
   const { winner, character, scores } = roundResult;
   const sortedScores = [...scores].sort((a, b) => b.score - a.score);
 
@@ -304,7 +304,7 @@ function ResultView({ roundResult, room, onReturnToScoreboard }) {
       {/* Actions */}
       <div style={{ width: '100%', paddingTop: 4 }}>
         {room.isHost ? (
-          <button className="btn btn-primary" onClick={onReturnToScoreboard}>
+          <button className="btn btn-primary" onClick={() => onStartRound()}>
             <span>🎮</span> Next Round
           </button>
         ) : (
@@ -331,7 +331,6 @@ function adjustBrightness(hex, amount) {
 
 export default function GameRoom({
   room,
-  profile,
   gamePhase,
   myColor,
   roundResult,
@@ -340,8 +339,6 @@ export default function GameRoom({
   onStartRound,
   onSubmitGuess,
   onSkipGuess,
-  onReturnToScoreboard,
-  onUpdateProfile,
   onLeave
 }) {
   if (gamePhase === 'playing' && myColor) {
@@ -362,7 +359,7 @@ export default function GameRoom({
       <ResultView
         roundResult={roundResult}
         room={room}
-        onReturnToScoreboard={onReturnToScoreboard}
+        onStartRound={onStartRound}
       />
     );
   }
@@ -370,7 +367,6 @@ export default function GameRoom({
   return (
     <LobbyView
       room={room}
-      profile={profile}
       onStartRound={onStartRound}
       onLeave={onLeave}
     />

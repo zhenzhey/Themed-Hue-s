@@ -180,12 +180,6 @@ export default function App() {
     socket.emit('skip_guess', { roomCode: room.code });
   }, [room]);
 
-  const returnToScoreboard = useCallback(() => {
-    const socket = socketRef.current;
-    if (!socket || !room) return;
-    socket.emit('return_to_scoreboard', { roomCode: room.code });
-  }, [room]);
-
   const updateProfile = useCallback((updates) => {
     const socket = socketRef.current;
     setProfile(prev => {
@@ -223,7 +217,6 @@ export default function App() {
       {screen === 'room' && room ? (
         <GameRoom
           room={room}
-          profile={profile}
           gamePhase={gamePhase}
           myColor={myColor}
           roundResult={roundResult}
@@ -232,8 +225,6 @@ export default function App() {
           onStartRound={startRound}
           onSubmitGuess={submitGuess}
           onSkipGuess={skipGuess}
-          onReturnToScoreboard={returnToScoreboard}
-          onUpdateProfile={updateProfile}
           onLeave={leaveRoom}
         />
       ) : (

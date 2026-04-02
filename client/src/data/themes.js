@@ -1,5 +1,19 @@
 export const themeList = [
   {
+    id: 'fast_food',
+    name: 'Fast Food',
+    emoji: '🍔',
+    description: 'Guess the chain from its brand colors!',
+    characterCount: 11
+  },
+  {
+    id: 'drinks',
+    name: 'Drinks & Sodas',
+    emoji: '🥤',
+    description: 'Guess the drink brand from its colors!',
+    characterCount: 9
+  },
+  {
     id: 'disney_princess',
     name: 'Disney Princesses',
     emoji: '👸',

@@ -16,7 +16,7 @@ function Avatar({ avatarColor, name, size = 'md' }) {
 
 export default function Home({ profile, joinError, onUpdateProfile, onCreateRoom, onJoinRoom, onClearError }) {
   const [view, setView] = useState('main'); // 'main' | 'create' | 'join' | 'editProfile'
-  const [selectedTheme, setSelectedTheme] = useState('disney_princess');
+  const [selectedTheme, setSelectedTheme] = useState(themeList[0].id);
   const [joinCode, setJoinCode] = useState('');
   const [editName, setEditName] = useState(profile.name);
   const [editColor, setEditColor] = useState(profile.avatarColor || defaultAvatar);
