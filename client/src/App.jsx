@@ -4,7 +4,7 @@ import Home from './Home';
 import GameRoom from './GameRoom';
 import { defaultAvatar } from './data/avatarColors';
 
-const SOCKET_URL = import.meta.env.DEV ? '' : '/';
+const SOCKET_URL = import.meta.env.DEV ? 'http://localhost:3001' : '/';
 
 function AnimatedBackground() {
   return (
@@ -20,7 +20,7 @@ function AnimatedBackground() {
 
 export default function App() {
   const socketRef = useRef(null);
-  const [socketReady, setSocketReady] = useState(false);
+  const [, setSocketReady] = useState(false);
 
   const [screen, setScreen] = useState('home'); // 'home' | 'room'
 
@@ -49,7 +49,6 @@ export default function App() {
   useEffect(() => {
     const socket = io(SOCKET_URL, {
       transports: ['websocket', 'polling'],
-      reconnectionAttempts: 5
     });
     socketRef.current = socket;
 
@@ -57,14 +56,14 @@ export default function App() {
       setSocketReady(true);
     });
 
-    socket.on('room_created', ({ roomCode, room }) => {
+    socket.on('room_created', ({ room }) => {
       setRoom({ ...room, myId: socket.id, isHost: true });
       setGamePhase('lobby');
       setScreen('room');
       setJoinError(null);
     });
 
-    socket.on('room_joined', ({ roomCode, room }) => {
+    socket.on('room_joined', ({ room }) => {
       setRoom({ ...room, myId: socket.id, isHost: false });
       setGamePhase('lobby');
       setScreen('room');
@@ -78,7 +77,6 @@ export default function App() {
     socket.on('player_left', ({ room }) => {
       setRoom(prev => {
         if (!prev) return null;
-        // Check if I'm now host
         const amHost = room.host === prev.myId;
         return { ...room, myId: prev.myId, isHost: amHost };
       });
@@ -88,7 +86,7 @@ export default function App() {
       setRoom(prev => ({ ...room, myId: prev?.myId, isHost: prev?.isHost }));
     });
 
-    socket.on('round_started', ({ roundNumber, yourColor, totalPlayers, players }) => {
+    socket.on('round_started', ({ roundNumber, yourColor }) => {
       setMyColor(yourColor);
       setGamePhase('playing');
       setRoundResult(null);
@@ -197,13 +195,11 @@ export default function App() {
 
   const leaveRoom = useCallback(() => {
     const socket = socketRef.current;
-    if (socket) socket.disconnect();
-    // Re-connect for future use
-    setTimeout(() => {
-      const newSocket = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
-      socketRef.current = newSocket;
-      newSocket.on('connect', () => setSocketReady(true));
-    }, 100);
+    if (socket) {
+      socket.disconnect();
+      // Reconnect the same socket instance so all event listeners are preserved
+      setTimeout(() => socket.connect(), 100);
+    }
     setRoom(null);
     setScreen('home');
     setGamePhase('lobby');

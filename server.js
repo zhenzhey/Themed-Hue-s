@@ -9,7 +9,10 @@ const io = new Server(server, {
   cors: {
     origin: process.env.NODE_ENV === 'production' ? false : ['http://localhost:5173'],
     methods: ['GET', 'POST']
-  }
+  },
+  pingInterval: 10000,
+  pingTimeout: 20000,
+  transports: ['websocket', 'polling']
 });
 
 if (process.env.NODE_ENV === 'production') {
@@ -23,6 +26,245 @@ if (process.env.NODE_ENV === 'production') {
 // difficulty: 1 = easy/famous, 2 = medium, 3 = hard
 
 const themes = {
+  us_tech: {
+    id: 'us_tech',
+    name: 'US Tech Giants',
+    emoji: '💻',
+    characters: [
+      {
+        id: 'google', difficulty: 1,
+        name: 'Google', hint: 'Search Engine',
+        colors: [
+          { name: 'Cobalt Blue', hex: '#4285F4', textColor: '#FFFFFF' },
+          { name: 'Tomato Red', hex: '#EA4335', textColor: '#FFFFFF' },
+          { name: 'Sunflower Yellow', hex: '#FBBC05', textColor: '#5A4000' },
+          { name: 'Fresh Green', hex: '#34A853', textColor: '#FFFFFF' }
+        ],
+        acceptedNames: ['google', 'google inc', 'alphabet']
+      },
+      {
+        id: 'apple', difficulty: 1,
+        name: 'Apple', hint: 'Think Different',
+        colors: [
+          { name: 'Space Gray', hex: '#555555', textColor: '#FFFFFF' },
+          { name: 'Silver White', hex: '#F5F5F7', textColor: '#4A4A4A' }
+        ],
+        acceptedNames: ['apple', 'apple inc', 'apple computer']
+      },
+      {
+        id: 'microsoft', difficulty: 1,
+        name: 'Microsoft', hint: 'Be What\'s Next',
+        colors: [
+          { name: 'Brick Red', hex: '#F25022', textColor: '#FFFFFF' },
+          { name: 'Lime Green', hex: '#7FBA00', textColor: '#FFFFFF' },
+          { name: 'Sky Blue', hex: '#00A4EF', textColor: '#FFFFFF' },
+          { name: 'Amber Yellow', hex: '#FFB900', textColor: '#5A4000' }
+        ],
+        acceptedNames: ['microsoft', 'microsoft corp', 'msft']
+      },
+      {
+        id: 'amazon', difficulty: 1,
+        name: 'Amazon', hint: 'From A to Z',
+        colors: [
+          { name: 'Warm Orange', hex: '#FF9900', textColor: '#FFFFFF' },
+          { name: 'Dark Navy', hex: '#232F3E', textColor: '#FFFFFF' }
+        ],
+        acceptedNames: ['amazon', 'amazon.com', 'amazon inc']
+      },
+      {
+        id: 'netflix', difficulty: 1,
+        name: 'Netflix', hint: 'Watch Anywhere',
+        colors: [
+          { name: 'Crimson Red', hex: '#E50914', textColor: '#FFFFFF' },
+          { name: 'Charcoal Black', hex: '#141414', textColor: '#FFFFFF' }
+        ],
+        acceptedNames: ['netflix', 'netflix inc']
+      },
+      {
+        id: 'meta', difficulty: 1,
+        name: 'Meta', hint: 'The Metaverse Company',
+        colors: [
+          { name: 'Bright Blue', hex: '#0082FB', textColor: '#FFFFFF' },
+          { name: 'White', hex: '#F5F5F5', textColor: '#4A4A4A' }
+        ],
+        acceptedNames: ['meta', 'facebook', 'meta platforms', 'fb']
+      },
+      {
+        id: 'spotify', difficulty: 1,
+        name: 'Spotify', hint: 'Music for Everyone',
+        colors: [
+          { name: 'Neon Green', hex: '#1DB954', textColor: '#FFFFFF' },
+          { name: 'Midnight Black', hex: '#191414', textColor: '#FFFFFF' }
+        ],
+        acceptedNames: ['spotify', 'spotify ab']
+      },
+      {
+        id: 'youtube', difficulty: 1,
+        name: 'YouTube', hint: 'Broadcast Yourself',
+        colors: [
+          { name: 'Signal Red', hex: '#FF0000', textColor: '#FFFFFF' },
+          { name: 'Dark Gray', hex: '#282828', textColor: '#FFFFFF' }
+        ],
+        acceptedNames: ['youtube', 'yt', 'youtube.com']
+      },
+      {
+        id: 'snapchat', difficulty: 1,
+        name: 'Snapchat', hint: 'The Ghost App',
+        colors: [
+          { name: 'Electric Yellow', hex: '#FFFC00', textColor: '#3A3A00' },
+          { name: 'Black', hex: '#1A1A1A', textColor: '#FFFFFF' }
+        ],
+        acceptedNames: ['snapchat', 'snap', 'snap inc']
+      },
+      {
+        id: 'instagram', difficulty: 2,
+        name: 'Instagram', hint: 'Capture & Share the World',
+        colors: [
+          { name: 'Deep Purple', hex: '#833AB4', textColor: '#FFFFFF' },
+          { name: 'Hot Pink', hex: '#E1306C', textColor: '#FFFFFF' },
+          { name: 'Sunset Orange', hex: '#F77737', textColor: '#FFFFFF' }
+        ],
+        acceptedNames: ['instagram', 'ig', 'insta']
+      },
+      {
+        id: 'linkedin', difficulty: 2,
+        name: 'LinkedIn', hint: 'Professional Network',
+        colors: [
+          { name: 'Corporate Blue', hex: '#0A66C2', textColor: '#FFFFFF' },
+          { name: 'White', hex: '#F5F5F5', textColor: '#4A4A4A' }
+        ],
+        acceptedNames: ['linkedin', 'linked in', 'linkedin corp']
+      },
+      {
+        id: 'twitter', difficulty: 2,
+        name: 'X (Twitter)', hint: 'Everything App',
+        colors: [
+          { name: 'Sky Blue', hex: '#1DA1F2', textColor: '#FFFFFF' },
+          { name: 'Black', hex: '#14171A', textColor: '#FFFFFF' }
+        ],
+        acceptedNames: ['twitter', 'x', 'x twitter', 'x corp']
+      },
+      {
+        id: 'uber', difficulty: 2,
+        name: 'Uber', hint: 'Move the Way You Want',
+        colors: [
+          { name: 'Black', hex: '#000000', textColor: '#FFFFFF' },
+          { name: 'White', hex: '#FFFFFF', textColor: '#1A1A1A' }
+        ],
+        acceptedNames: ['uber', 'uber technologies']
+      },
+      {
+        id: 'airbnb', difficulty: 2,
+        name: 'Airbnb', hint: 'Belong Anywhere',
+        colors: [
+          { name: 'Rausch Coral', hex: '#FF5A5F', textColor: '#FFFFFF' },
+          { name: 'White', hex: '#F7F7F7', textColor: '#4A4A4A' }
+        ],
+        acceptedNames: ['airbnb', 'air bnb', 'airbnb inc']
+      },
+      {
+        id: 'zoom', difficulty: 2,
+        name: 'Zoom', hint: 'Meet Happy',
+        colors: [
+          { name: 'Vivid Blue', hex: '#2D8CFF', textColor: '#FFFFFF' },
+          { name: 'White', hex: '#F5F5F5', textColor: '#4A4A4A' }
+        ],
+        acceptedNames: ['zoom', 'zoom video', 'zoom communications']
+      },
+      {
+        id: 'discord', difficulty: 2,
+        name: 'Discord', hint: 'Your Place to Talk',
+        colors: [
+          { name: 'Periwinkle', hex: '#5865F2', textColor: '#FFFFFF' },
+          { name: 'Dark Gray', hex: '#23272A', textColor: '#FFFFFF' }
+        ],
+        acceptedNames: ['discord', 'discord inc']
+      },
+      {
+        id: 'tiktok', difficulty: 2,
+        name: 'TikTok', hint: 'Make Your Day',
+        colors: [
+          { name: 'Pure Black', hex: '#010101', textColor: '#FFFFFF' },
+          { name: 'Cyan Teal', hex: '#69C9D0', textColor: '#1A1A1A' },
+          { name: 'Vivid Red', hex: '#EE1D52', textColor: '#FFFFFF' }
+        ],
+        acceptedNames: ['tiktok', 'tik tok', 'douyin']
+      },
+      {
+        id: 'twitch', difficulty: 2,
+        name: 'Twitch', hint: 'You\'re Already Here',
+        colors: [
+          { name: 'Violet Purple', hex: '#9146FF', textColor: '#FFFFFF' },
+          { name: 'White', hex: '#F5F5F5', textColor: '#4A4A4A' }
+        ],
+        acceptedNames: ['twitch', 'twitch.tv', 'twitch interactive']
+      },
+      {
+        id: 'slack', difficulty: 2,
+        name: 'Slack', hint: 'Where Work Happens',
+        colors: [
+          { name: 'Dark Plum', hex: '#611F69', textColor: '#FFFFFF' },
+          { name: 'Aqua Blue', hex: '#36C5F0', textColor: '#FFFFFF' },
+          { name: 'Mint Green', hex: '#2EB67D', textColor: '#FFFFFF' }
+        ],
+        acceptedNames: ['slack', 'slack technologies']
+      },
+      {
+        id: 'pinterest', difficulty: 2,
+        name: 'Pinterest', hint: 'Discover Ideas',
+        colors: [
+          { name: 'Cherry Red', hex: '#E60023', textColor: '#FFFFFF' },
+          { name: 'White', hex: '#F5F5F5', textColor: '#4A4A4A' }
+        ],
+        acceptedNames: ['pinterest', 'pinterest inc']
+      },
+      {
+        id: 'stripe', difficulty: 3,
+        name: 'Stripe', hint: 'Payments Infrastructure',
+        colors: [
+          { name: 'Electric Indigo', hex: '#635BFF', textColor: '#FFFFFF' },
+          { name: 'Midnight', hex: '#0A2540', textColor: '#FFFFFF' }
+        ],
+        acceptedNames: ['stripe', 'stripe inc', 'stripe payments']
+      },
+      {
+        id: 'dropbox', difficulty: 3,
+        name: 'Dropbox', hint: 'Cloud Storage',
+        colors: [
+          { name: 'Royal Blue', hex: '#0061FF', textColor: '#FFFFFF' },
+          { name: 'White', hex: '#F5F5F5', textColor: '#4A4A4A' }
+        ],
+        acceptedNames: ['dropbox', 'dropbox inc']
+      },
+      {
+        id: 'salesforce', difficulty: 3,
+        name: 'Salesforce', hint: 'CRM Leader',
+        colors: [
+          { name: 'Cloud Blue', hex: '#00A1E0', textColor: '#FFFFFF' },
+          { name: 'Sky Blue', hex: '#009EDB', textColor: '#FFFFFF' }
+        ],
+        acceptedNames: ['salesforce', 'salesforce.com', 'sfdc']
+      },
+      {
+        id: 'adobe', difficulty: 3,
+        name: 'Adobe', hint: 'Creativity for All',
+        colors: [
+          { name: 'Flame Red', hex: '#FA0F00', textColor: '#FFFFFF' },
+          { name: 'Dark Gray', hex: '#2C2C2C', textColor: '#FFFFFF' }
+        ],
+        acceptedNames: ['adobe', 'adobe inc', 'adobe systems']
+      },
+      {
+        id: 'nvidia', difficulty: 3,
+        name: 'NVIDIA', hint: 'The Way It\'s Meant to Be Played',
+        colors: [
+          { name: 'Chartreuse Green', hex: '#76B900', textColor: '#FFFFFF' },
+          { name: 'Black', hex: '#1A1A1A', textColor: '#FFFFFF' }
+        ],
+        acceptedNames: ['nvidia', 'nvidia corp']
+      }
+    ]
+  },
   disney_princess: {
     id: 'disney_princess',
     name: 'Disney Princesses',
@@ -324,6 +566,87 @@ const themes = {
           { name: 'Bright Red', hex: '#E31837', textColor: '#FFFFFF' }
         ],
         acceptedNames: ["domino's", 'dominos', 'domino']
+      },
+      {
+        id: 'pizza_hut', difficulty: 1,
+        name: 'Pizza Hut', hint: 'No One Out-Pizzas the Hut',
+        colors: [
+          { name: 'Scarlet Red', hex: '#EE3224', textColor: '#FFFFFF' },
+          { name: 'White', hex: '#F5F5F5', textColor: '#4A4A4A' }
+        ],
+        acceptedNames: ['pizza hut', 'pizzahut', 'the hut']
+      },
+      {
+        id: 'wendys', difficulty: 2,
+        name: "Wendy's", hint: "Quality Is Our Recipe",
+        colors: [
+          { name: 'Ruby Red', hex: '#E2231A', textColor: '#FFFFFF' },
+          { name: 'White', hex: '#F5F5F5', textColor: '#4A4A4A' }
+        ],
+        acceptedNames: ["wendy's", 'wendys', 'wendy']
+      },
+      {
+        id: 'chick_fil_a', difficulty: 2,
+        name: 'Chick-fil-A', hint: 'Eat Mor Chikin',
+        colors: [
+          { name: 'Crimson Red', hex: '#E51636', textColor: '#FFFFFF' },
+          { name: 'Deep Navy', hex: '#004F71', textColor: '#FFFFFF' }
+        ],
+        acceptedNames: ['chick-fil-a', 'chick fil a', 'chickfila', 'cfa']
+      },
+      {
+        id: 'five_guys', difficulty: 2,
+        name: 'Five Guys', hint: 'Burgers and Fries',
+        colors: [
+          { name: 'Dark Red', hex: '#CE2029', textColor: '#FFFFFF' },
+          { name: 'Bright Yellow', hex: '#FFD100', textColor: '#5A4000' }
+        ],
+        acceptedNames: ['five guys', 'fiveguys', '5 guys']
+      },
+      {
+        id: 'panda_express', difficulty: 2,
+        name: 'Panda Express', hint: 'American Chinese Cuisine',
+        colors: [
+          { name: 'Lipstick Red', hex: '#C8102E', textColor: '#FFFFFF' },
+          { name: 'Black', hex: '#1A1A1A', textColor: '#FFFFFF' }
+        ],
+        acceptedNames: ['panda express', 'pandaexpress', 'panda']
+      },
+      {
+        id: 'popeyes', difficulty: 2,
+        name: "Popeyes", hint: "Louisiana Kitchen",
+        colors: [
+          { name: 'Burnt Orange', hex: '#FA7A1E', textColor: '#FFFFFF' },
+          { name: 'White', hex: '#F5F5F5', textColor: '#4A4A4A' }
+        ],
+        acceptedNames: ["popeyes", 'popeyes louisiana kitchen', 'popeye']
+      },
+      {
+        id: 'sonic', difficulty: 2,
+        name: 'Sonic', hint: "America's Drive-In",
+        colors: [
+          { name: 'Pacific Blue', hex: '#005FAD', textColor: '#FFFFFF' },
+          { name: 'Golden Yellow', hex: '#FFCB05', textColor: '#5A4000' }
+        ],
+        acceptedNames: ['sonic', 'sonic drive-in', 'sonic diner']
+      },
+      {
+        id: 'panera', difficulty: 3,
+        name: 'Panera Bread', hint: 'You Pick Two',
+        colors: [
+          { name: 'Olive Green', hex: '#4A8123', textColor: '#FFFFFF' },
+          { name: 'Warm Cream', hex: '#E8DCC8', textColor: '#4A4A4A' }
+        ],
+        acceptedNames: ['panera bread', 'panera', 'panera bakery']
+      },
+      {
+        id: 'whataburger', difficulty: 3,
+        name: 'Whataburger', hint: 'Just Like You Like It',
+        colors: [
+          { name: 'Tangerine Orange', hex: '#F76A00', textColor: '#FFFFFF' },
+          { name: 'White', hex: '#F5F5F5', textColor: '#4A4A4A' }
+        ],
+        acceptedNames: ['whataburger', 'whata burger']
       }
     ]
   },
@@ -527,12 +850,14 @@ io.on('connection', (socket) => {
 
   socket.on('start_round', ({ roomCode }) => {
     const room = rooms.get(roomCode);
-    if (!room || room.host !== socket.id) return;
+    console.log('[start_round] roomCode=%s socketId=%s host=%s stateMatch=%s', roomCode, socket.id, room?.host, room ? (room.state === 'lobby' || room.state === 'round_end') : 'no-room');
+    if (!room || room.host !== socket.id) { console.log('[start_round] BLOCKED: no room or host mismatch'); return; }
     // Allow starting from lobby or round_end (skips scoreboard screen)
-    if (room.state !== 'lobby' && room.state !== 'round_end') return;
+    if (room.state !== 'lobby' && room.state !== 'round_end') { console.log('[start_round] BLOCKED: bad state', room.state); return; }
 
     const themeData = themes[room.theme];
-    if (!themeData || themeData.characters.length === 0) return;
+    console.log('[start_round] theme=%s themeFound=%s', room.theme, !!themeData);
+    if (!themeData || themeData.characters.length === 0) { console.log('[start_round] BLOCKED: no theme data'); return; }
 
     const char = pickCharacter(room, themeData);
     room.usedCharacterIds.add(char.id);

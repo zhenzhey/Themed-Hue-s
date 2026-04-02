@@ -214,7 +214,7 @@ function PlayingView({ myColor, wrongGuess, skippedInfo, onSubmitGuess, onSkipGu
             value={guess}
             onChange={e => setGuess(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type character name…"
+            placeholder="Type your guess…"
             maxLength={40}
             autoComplete="off"
             autoCorrect="off"

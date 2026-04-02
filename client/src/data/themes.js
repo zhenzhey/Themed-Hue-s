@@ -7,6 +7,13 @@ export const themeList = [
     characterCount: 11
   },
   {
+    id: 'us_tech',
+    name: 'Tech Giants',
+    emoji: '💻',
+    description: 'Guess the tech company from its brand colors!',
+    characterCount: 10
+  },
+  {
     id: 'drinks',
     name: 'Drinks & Sodas',
     emoji: '🥤',
