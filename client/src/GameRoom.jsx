@@ -83,6 +83,7 @@ function LobbyView({ room, onStartRound, onLeave }) {
           <button
             className="btn btn-primary"
             onClick={onStartRound}
+            //disabled={room.players.length < 1}
             disabled={room.players.length < 2}
             style={{ opacity: room.players.length < 2 ? 0.5 : 1 }}
           >
@@ -104,6 +105,7 @@ function LobbyView({ room, onStartRound, onLeave }) {
 function PlayingView({ myColor, wrongGuess, skippedInfo, onSubmitGuess, onSkipGuess, room }) {
   const [guess, setGuess] = useState('');
   const [skipped, setSkipped] = useState(false);
+  const [cooldownSeconds, setCooldownSeconds] = useState(5);
   const inputRef = useRef(null);
 
   const bgColor = myColor?.hex || '#C8A8F8';
@@ -127,7 +129,22 @@ function PlayingView({ myColor, wrongGuess, skippedInfo, onSubmitGuess, onSkipGu
 
   useEffect(() => {
     const timer = setTimeout(() => inputRef.current?.focus(), 400);
-    return () => clearTimeout(timer);
+    
+    // Cooldown countdown
+    const interval = setInterval(() => {
+      setCooldownSeconds(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, []);
 
   const sparkles = ['✨', '💫', '⭐', '🌟'];
@@ -214,17 +231,26 @@ function PlayingView({ myColor, wrongGuess, skippedInfo, onSubmitGuess, onSkipGu
             value={guess}
             onChange={e => setGuess(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type your guess…"
+            placeholder={cooldownSeconds > 0 ? `Wait ${cooldownSeconds}s before entering...` : 'Type your guess…'}
             maxLength={40}
             autoComplete="off"
             autoCorrect="off"
             spellCheck="false"
+            disabled={cooldownSeconds > 0}
           />
           <button
             className="btn btn-primary"
-            style={{ width: 'auto', padding: '14px 20px', borderRadius: 'var(--radius-md)', fontSize: '0.9rem', flexShrink: 0 }}
+            style={{ 
+              width: 'auto', 
+              padding: '14px 20px', 
+              borderRadius: 'var(--radius-md)', 
+              fontSize: '0.9rem', 
+              flexShrink: 0,
+              opacity: cooldownSeconds > 0 ? 0.5 : 1,
+              backgroundColor: cooldownSeconds > 0 ? '#999999' : undefined
+            }}
             onClick={submit}
-            disabled={!guess.trim()}
+            disabled={!guess.trim() || cooldownSeconds > 0}
           >
             Guess!
           </button>

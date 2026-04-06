@@ -284,7 +284,7 @@ const themes = {
         name: 'Anna', hint: 'Frozen',
         colors: [
           { name: 'Sky Blue', hex: '#aedfea', textColor: '#FFFFFF' },
-          { name: 'Chestnut Brown', hex: '#8B5E3C', textColor: '#FFE4A0' }
+          { name: 'Chestnut Brown', hex: '#8B5E3C', textColor: '#FFE4A0' }，
           { name: 'Orchid Violet', hex: '#c81fa2', textColor: '#FFFFFF' }
         ],
         acceptedNames: ['anna', 'frozen anna', 'princess anna']
@@ -518,8 +518,8 @@ const themes = {
         name: 'Taco Bell', hint: 'Live Más',
         colors: [
           { name: 'Deep Purple', hex: '#702082', textColor: '#FFFFFF' },
-          { name: 'Cream White', hex: '#F5F0E8', textColor: '#4A4A4A' }
-          { name: 'Lavender Purple', hex: '#9679a7', textColor: '#FFFFFF' },
+          { name: 'Cream White', hex: '#F5F0E8', textColor: '#4A4A4A' },
+          { name: 'Lavender Purple', hex: '#9679a7', textColor: '#FFFFFF' }
 
         ],
         acceptedNames: ['taco bell', 'tacobell', 'taco']
