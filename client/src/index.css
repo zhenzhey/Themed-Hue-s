@@ -554,14 +554,14 @@ input {
   position: fixed;
   top: calc(20px + env(safe-area-inset-top, 0px));
   right: 20px;
-  padding: 8px 14px;
+  padding: 12px 20px;
   border-radius: 20px;
   background: rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: rgba(255, 255, 255, 0.85);
-  font-size: 0.8rem;
+  font-size: 1rem;
   font-weight: 700;
   font-family: var(--font);
   cursor: pointer;
