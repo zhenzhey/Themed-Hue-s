@@ -4,7 +4,7 @@ export const themeList = [
     name: 'Fast Food',
     emoji: '🍔',
     description: 'Guess the chain from its brand colors!',
-    characterCount: 11
+    characterCount: 17
   },
   {
     id: 'us_tech',
