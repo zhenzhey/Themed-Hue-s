@@ -3,6 +3,8 @@
 # Kill any existing instances
 pkill -f "node server.js" 2>/dev/null
 pkill -f "vite" 2>/dev/null
+# Force-free port 3001 in case something else is holding it
+lsof -ti:3001 | xargs kill -9 2>/dev/null
 sleep 1
 
 # Get local IP

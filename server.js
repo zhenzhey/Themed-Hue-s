@@ -284,7 +284,7 @@ const themes = {
         name: 'Anna', hint: 'Frozen',
         colors: [
           { name: 'Sky Blue', hex: '#aedfea', textColor: '#FFFFFF' },
-          { name: 'Chestnut Brown', hex: '#8B5E3C', textColor: '#FFE4A0' }，
+          { name: 'Chestnut Brown', hex: '#8B5E3C', textColor: '#FFE4A0' },
           { name: 'Orchid Violet', hex: '#c81fa2', textColor: '#FFFFFF' }
         ],
         acceptedNames: ['anna', 'frozen anna', 'princess anna']

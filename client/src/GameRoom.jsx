@@ -144,6 +144,7 @@ function PlayingView({ myColor, wrongGuess, skippedInfo, onSubmitGuess, onSkipGu
   const [guess, setGuess] = useState('');
   const [skipped, setSkipped] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
   const inputRef = useRef(null);
 
   const bgColor = myColor?.hex || '#C8A8F8';
@@ -185,6 +186,18 @@ function PlayingView({ myColor, wrongGuess, skippedInfo, onSubmitGuess, onSkipGu
       return () => clearTimeout(timer);
     }
   }, [locked]);
+
+  useEffect(() => {
+    if (!wrongGuess) return;
+    setCooldownSeconds(3);
+    const interval = setInterval(() => {
+      setCooldownSeconds(prev => {
+        if (prev <= 1) { clearInterval(interval); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [wrongGuess]);
 
   const sparkles = ['✨', '💫', '⭐', '🌟'];
   const randomSparkle = sparkles[Math.floor(bgColor.charCodeAt(1) % sparkles.length)];
