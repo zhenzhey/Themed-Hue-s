@@ -209,17 +209,6 @@ function PlayingView({ myColor, wrongGuess, skippedInfo, onSubmitGuess, onSkipGu
         background: `linear-gradient(160deg, ${adjustBrightness(bgColor, 20)} 0%, ${bgColor} 50%, ${adjustBrightness(bgColor, -20)} 100%)`
       }}
     >
-      {/* 3-second countdown overlay */}
-      {locked && (
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 10,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(6px)'
-        }}>
-          <div style={{ fontSize: '5rem', fontWeight: 900, color: '#fff', lineHeight: 1 }}>{countdown}</div>
-          <p style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 700, marginTop: 12, fontSize: '1rem' }}>Get ready!</p>
-        </div>
-      )}
 
       {/* Room code pill (top-left) */}
       <div style={{
@@ -268,8 +257,17 @@ function PlayingView({ myColor, wrongGuess, skippedInfo, onSubmitGuess, onSkipGu
           </p>
         </div>
 
-        {/* Hint area */}
-        {currentHint ? (
+        {/* Hint area / Countdown */}
+        {locked ? (
+          <div style={{
+            marginTop: 14,
+            fontSize: '5rem', fontWeight: 900, color: textColor,
+            lineHeight: 1, opacity: 0.85,
+            textShadow: '0 2px 16px rgba(0,0,0,0.2)'
+          }}>
+            {countdown}
+          </div>
+        ) : currentHint ? (
           <div style={{
             marginTop: 14,
             padding: '10px 20px',
@@ -345,23 +343,25 @@ function PlayingView({ myColor, wrongGuess, skippedInfo, onSubmitGuess, onSkipGu
             value={guess}
             onChange={e => setGuess(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={cooldownSeconds > 0 ? `Wait ${cooldownSeconds}s before entering...` : 'Type your guess…'}
+            placeholder={locked ? 'Get ready…' : cooldownSeconds > 0 ? `Wait ${cooldownSeconds}s before entering...` : 'Type your guess…'}
             maxLength={40}
             autoComplete="off"
             autoCorrect="off"
             spellCheck="false"
             disabled={locked}
+            style={locked ? { opacity: 0.4, cursor: 'not-allowed' } : undefined}
           />
           <button
             className="btn btn-primary"
-            style={{ 
-              width: 'auto', 
-              padding: '14px 20px', 
-              borderRadius: 'var(--radius-md)', 
-              fontSize: '0.9rem', 
+            style={{
+              width: 'auto',
+              padding: '14px 20px',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '0.9rem',
               flexShrink: 0,
-              opacity: cooldownSeconds > 0 ? 0.5 : 1,
-              backgroundColor: cooldownSeconds > 0 ? '#999999' : undefined
+              opacity: locked ? 0.4 : 1,
+              backgroundColor: locked ? '#999999' : undefined,
+              cursor: locked ? 'not-allowed' : undefined
             }}
             onClick={submit}
             disabled={!guess.trim() || locked}
