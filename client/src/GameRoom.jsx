@@ -121,6 +121,7 @@ function LobbyView({ room, onStartRound, onLeave, onSwitchTheme }) {
           <button
             className="btn btn-primary"
             onClick={onStartRound}
+            //disabled={room.players.length < 1}
             disabled={room.players.length < 2}
             style={{ opacity: room.players.length < 2 ? 0.5 : 1 }}
           >
@@ -331,7 +332,7 @@ function PlayingView({ myColor, wrongGuess, skippedInfo, onSubmitGuess, onSkipGu
             value={guess}
             onChange={e => setGuess(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type your guess…"
+            placeholder={cooldownSeconds > 0 ? `Wait ${cooldownSeconds}s before entering...` : 'Type your guess…'}
             maxLength={40}
             autoComplete="off"
             autoCorrect="off"
@@ -340,7 +341,15 @@ function PlayingView({ myColor, wrongGuess, skippedInfo, onSubmitGuess, onSkipGu
           />
           <button
             className="btn btn-primary"
-            style={{ width: 'auto', padding: '14px 20px', borderRadius: 'var(--radius-md)', fontSize: '0.9rem', flexShrink: 0 }}
+            style={{ 
+              width: 'auto', 
+              padding: '14px 20px', 
+              borderRadius: 'var(--radius-md)', 
+              fontSize: '0.9rem', 
+              flexShrink: 0,
+              opacity: cooldownSeconds > 0 ? 0.5 : 1,
+              backgroundColor: cooldownSeconds > 0 ? '#999999' : undefined
+            }}
             onClick={submit}
             disabled={!guess.trim() || locked}
           >
