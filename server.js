@@ -650,6 +650,33 @@ const themes = {
           { name: 'Warm Orange', hex: '#F57C00', textColor: '#FFFFFF' }
         ],
         acceptedNames: ["eat'n park", "eatn park", "eat n park", "eatnpark"]
+      },
+      {
+        id: 'raising_canes', difficulty: 2,
+        name: "Raising Cane's", hint: 'One Love',
+        colors: [
+          { name: 'Crimson Red', hex: '#D71C2E', textColor: '#FFFFFF' },
+          { name: 'Golden Yellow', hex: '#F6C347', textColor: '#5A3A00' }
+        ],
+        acceptedNames: ["raising cane's", "raising canes", "canes", "cane's"]
+      },
+      {
+        id: 'wingstop', difficulty: 2,
+        name: 'Wingstop', hint: 'Lemon Pepper Wet',
+        colors: [
+          { name: 'Hunter Green', hex: '#006341', textColor: '#FFFFFF' },
+          { name: 'White', hex: '#F5F5F5', textColor: '#4A4A4A' }
+        ],
+        acceptedNames: ['wingstop', 'wing stop']
+      },
+      {
+        id: 'tim_hortons', difficulty: 2,
+        name: 'Tim Hortons', hint: 'Double Double',
+        colors: [
+          { name: 'Tim Red', hex: '#C8102F', textColor: '#FFFFFF' },
+          { name: 'White', hex: '#F5F5F5', textColor: '#4A4A4A' }
+        ],
+        acceptedNames: ["tim hortons", "tim horton's", "tims", "timmy's", "tim's"]
       }
     ]
   },
@@ -868,7 +895,7 @@ io.on('connection', (socket) => {
             lockedUntil: 0,
             hintsUsed: restoredPlayer.hintsUsed
           });
-          if (room.hintRevealed) {
+          if (restoredPlayer.hintRevealed) {
             socket.emit('hint_revealed', { hint: room.currentCharacter.hint, auto: true });
           }
         }
@@ -923,7 +950,7 @@ io.on('connection', (socket) => {
     room.roundNumber++;
     room.hintRevealed = false;
     room.roundLockedUntil = Date.now() + 3000;
-    room.players.forEach(p => { p.skipped = false; });
+    room.players.forEach(p => { p.skipped = false; p.hintRevealed = false; });
     room.colorAssignments = {};
     room.colorAssignmentsByName = {};
 
@@ -940,9 +967,10 @@ io.on('connection', (socket) => {
     room.autoHintTimer = setTimeout(() => {
       if (room.state === 'playing' && !room.hintRevealed) {
         room.hintRevealed = true;
+        room.players.forEach(p => { p.hintRevealed = true; });
         io.to(roomCode).emit('hint_revealed', { hint: char.hint, auto: true });
       }
-    }, 20000);
+    }, 30000);
 
     room.players.forEach(player => {
       io.to(player.id).emit('round_started', {
@@ -1034,17 +1062,12 @@ io.on('connection', (socket) => {
       return;
     }
     player.hintsUsed++;
-    if (!room.hintRevealed) {
-      room.hintRevealed = true;
-      io.to(roomCode).emit('hint_revealed', {
-        hint: room.currentCharacter.hint,
-        auto: false,
-        requestedBy: player.name,
-        hintsRemaining: 3 - player.hintsUsed
-      });
-    } else {
-      socket.emit('hint_count_updated', { hintsRemaining: 3 - player.hintsUsed });
-    }
+    player.hintRevealed = true;
+    socket.emit('hint_revealed', {
+      hint: room.currentCharacter.hint,
+      auto: false,
+      hintsRemaining: 3 - player.hintsUsed
+    });
   });
 
   socket.on('switch_theme', ({ roomCode, theme }) => {
@@ -1110,7 +1133,7 @@ io.on('connection', (socket) => {
         lockedUntil: 0,
         hintsUsed: restoredPlayer.hintsUsed
       });
-      if (room.hintRevealed) {
+      if (restoredPlayer.hintRevealed) {
         socket.emit('hint_revealed', { hint: room.currentCharacter.hint, auto: true });
       }
     }
@@ -1157,6 +1180,7 @@ io.on('connection', (socket) => {
       avatarColor: player.avatarColor,
       isHost: wasHost,
       hintsUsed: player.hintsUsed || 0,
+      hintRevealed: player.hintRevealed || false,
       cleanupTimer
     });
 
