@@ -189,6 +189,19 @@ export default function App() {
       });
     });
 
+    socket.on('settings_updated', ({ room: updatedRoom }) => {
+      setRoom(prev => {
+        if (!prev) return null;
+        const amHost = updatedRoom.host === prev.myId;
+        return { ...updatedRoom, myId: prev.myId, isHost: amHost };
+      });
+    });
+
+    socket.on('game_ended', ({ scores }) => {
+      setGamePhase('victory');
+      setRoom(prev => prev ? { ...prev, players: scores } : prev);
+    });
+
     socket.on('rejoined_room', ({ room: updatedRoom, isHost, gamePhase: phase }) => {
       setRoom({ ...updatedRoom, myId: socket.id, isHost });
       setScreen('room');
@@ -279,6 +292,24 @@ export default function App() {
     socket.emit('switch_theme', { roomCode: room.code, theme });
   }, [room]);
 
+  const updateSettings = useCallback((newSettings) => {
+    const socket = socketRef.current;
+    if (!socket || !room) return;
+    socket.emit('update_settings', { roomCode: room.code, ...newSettings });
+  }, [room]);
+
+  const endGame = useCallback(() => {
+    const socket = socketRef.current;
+    if (!socket || !room) return;
+    socket.emit('end_game', { roomCode: room.code });
+  }, [room]);
+
+  const resetGame = useCallback(() => {
+    const socket = socketRef.current;
+    if (!socket || !room) return;
+    socket.emit('reset_game', { roomCode: room.code });
+  }, [room]);
+
   const updateProfile = useCallback((updates) => {
     const socket = socketRef.current;
     setProfile(prev => {
@@ -328,6 +359,9 @@ export default function App() {
           onSkipGuess={skipGuess}
           onRequestHint={requestHint}
           onSwitchTheme={switchTheme}
+          onUpdateSettings={updateSettings}
+          onEndGame={endGame}
+          onResetGame={resetGame}
           onLeave={leaveRoom}
         />
       ) : (

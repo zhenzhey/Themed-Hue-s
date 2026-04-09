@@ -805,7 +805,8 @@ function sanitizeRoom(room) {
       isHost: p.isHost
     })),
     state: room.state,
-    roundNumber: room.roundNumber
+    roundNumber: room.roundNumber,
+    settings: room.settings
   };
 }
 
@@ -838,7 +839,8 @@ io.on('connection', (socket) => {
       hintRevealed: false,
       autoHintTimer: null,
       roundLockedUntil: 0,
-      disconnectedPlayers: new Map()
+      disconnectedPlayers: new Map(),
+      settings: { totalRounds: 5, revealTime: 3 }
     };
     rooms.set(roomCode, room);
     socket.join(roomCode);
@@ -949,7 +951,7 @@ io.on('connection', (socket) => {
     room.state = 'playing';
     room.roundNumber++;
     room.hintRevealed = false;
-    room.roundLockedUntil = Date.now() + 3000;
+    room.roundLockedUntil = Date.now() + (room.settings?.revealTime || 3) * 1000;
     room.players.forEach(p => { p.skipped = false; p.hintRevealed = false; });
     room.colorAssignments = {};
     room.colorAssignmentsByName = {};
@@ -1079,6 +1081,43 @@ io.on('connection', (socket) => {
     room.usedCharacterIds.clear();
     io.to(roomCode).emit('theme_switched', { theme, room: sanitizeRoom(room) });
     console.log(`Room ${roomCode} theme switched to ${theme}`);
+  });
+
+  socket.on('update_settings', ({ roomCode, totalRounds, revealTime }) => {
+    const room = rooms.get(roomCode);
+    if (!room || room.host !== socket.id) return;
+    room.settings.totalRounds = Math.max(1, Math.min(20, Number(totalRounds) || 5));
+    room.settings.revealTime  = Math.max(1, Math.min(10, Number(revealTime)  || 3));
+    io.to(roomCode).emit('settings_updated', { room: sanitizeRoom(room) });
+    console.log(`Room ${roomCode} settings updated: ${JSON.stringify(room.settings)}`);
+  });
+
+  socket.on('end_game', ({ roomCode }) => {
+    const room = rooms.get(roomCode);
+    if (!room || room.host !== socket.id) return;
+    io.to(roomCode).emit('game_ended', {
+      scores: room.players.map(p => ({
+        id: p.id, name: p.name, avatarColor: p.avatarColor,
+        score: p.score, isHost: p.isHost
+      }))
+    });
+    console.log(`Game ended in room ${roomCode}`);
+  });
+
+  socket.on('reset_game', ({ roomCode }) => {
+    const room = rooms.get(roomCode);
+    if (!room || room.host !== socket.id) return;
+    room.players.forEach(p => { p.score = 0; p.skipped = false; p.hintsUsed = 0; p.hintRevealed = false; });
+    room.roundNumber = 0;
+    room.state = 'lobby';
+    room.currentCharacter = null;
+    room.colorAssignments = {};
+    room.colorAssignmentsByName = {};
+    room.usedCharacterIds.clear();
+    room.hintRevealed = false;
+    if (room.autoHintTimer) { clearTimeout(room.autoHintTimer); room.autoHintTimer = null; }
+    io.to(roomCode).emit('returned_to_scoreboard', { room: sanitizeRoom(room) });
+    console.log(`Game reset in room ${roomCode}`);
   });
 
   socket.on('rejoin_room', ({ roomCode, playerName, avatarColor }) => {

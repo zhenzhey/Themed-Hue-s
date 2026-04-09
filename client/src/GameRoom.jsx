@@ -16,11 +16,82 @@ function Avatar({ avatarColor, name, size = 'md' }) {
   );
 }
 
+// ─── Settings Modal ───────────────────────────────────────────────────────────
+
+function SettingsModal({ settings, isHost, onSave, onClose }) {
+  const [totalRounds, setTotalRounds] = useState(settings?.totalRounds ?? 5);
+  const [revealTime,  setRevealTime]  = useState(settings?.revealTime  ?? 3);
+
+  function handleSave() {
+    onSave({ totalRounds, revealTime });
+    onClose();
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-card" onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div>
+          <p className="modal-title">⚙️ Game Settings</p>
+        </div>
+
+        {/* Total Rounds */}
+        <div>
+          <p className="modal-section-label">Total Rounds</p>
+          <div className="stepper-row">
+            <div className="stepper-label">
+              <p className="stepper-label-text">Rounds to Win</p>
+              <p className="stepper-label-sub">Game ends after this many rounds</p>
+            </div>
+            <div className="stepper-controls">
+              <button className="stepper-btn" onClick={() => setTotalRounds(v => Math.max(1, v - 1))} disabled={!isHost || totalRounds <= 1}>−</button>
+              <div className="stepper-value">{totalRounds}</div>
+              <button className="stepper-btn" onClick={() => setTotalRounds(v => Math.min(20, v + 1))} disabled={!isHost || totalRounds >= 20}>+</button>
+            </div>
+          </div>
+        </div>
+
+        {/* Reveal Time */}
+        <div>
+          <p className="modal-section-label">Color Reveal Time</p>
+          <div className="stepper-row">
+            <div className="stepper-label">
+              <p className="stepper-label-text">Preview Lock</p>
+              <p className="stepper-label-sub">Seconds before guessing opens</p>
+            </div>
+            <div className="stepper-controls">
+              <button className="stepper-btn" onClick={() => setRevealTime(v => Math.max(1, v - 1))} disabled={!isHost || revealTime <= 1}>−</button>
+              <div className="stepper-value">{revealTime}<span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginLeft: '2px' }}>s</span></div>
+              <button className="stepper-btn" onClick={() => setRevealTime(v => Math.min(10, v + 1))} disabled={!isHost || revealTime >= 10}>+</button>
+            </div>
+          </div>
+        </div>
+
+        {!isHost && (
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textAlign: 'center', fontWeight: 600 }}>
+            Only the host can change settings
+          </p>
+        )}
+
+        {/* Actions */}
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button className="btn btn-ghost" style={{ flex: 1 }} onClick={onClose}>Cancel</button>
+          {isHost && (
+            <button className="btn btn-primary" style={{ flex: 2 }} onClick={handleSave}>Save Settings</button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Lobby View ───────────────────────────────────────────────────────────────
 
-function LobbyView({ room, onStartRound, onLeave, onSwitchTheme }) {
+function LobbyView({ room, onStartRound, onLeave, onSwitchTheme, onUpdateSettings }) {
   const [copied, setCopied] = useState(false);
   const [showThemePicker, setShowThemePicker] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   function copyCode() {
     navigator.clipboard?.writeText(room.code).catch(() => {});
@@ -73,18 +144,21 @@ function LobbyView({ room, onStartRound, onLeave, onSwitchTheme }) {
         </div>
       </div>
 
-      {/* Theme switcher (host only) */}
+      {/* Theme switcher + Settings (host only) */}
       {room.isHost && (
-        <div style={{ width: '100%' }}>
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
           <button
             className="btn btn-ghost btn-sm"
             onClick={() => setShowThemePicker(v => !v)}
-            style={{ width: '100%', justifyContent: 'center', gap: 6 }}
+            style={{ width: '100%', justifyContent: 'flex-start', gap: 6 }}
           >
-            🎨 Switch Theme {showThemePicker ? '▲' : '▼'}
+            🎨 Switch Theme
+            <span style={{ marginLeft: 'auto', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+              {showThemePicker ? '▲' : '▼'}
+            </span>
           </button>
           {showThemePicker && (
-            <div className="glass" style={{ marginTop: 8, padding: '10px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div className="glass" style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: 6 }}>
               {themeList.map(t => (
                 <button
                   key={t.id}
@@ -107,7 +181,26 @@ function LobbyView({ room, onStartRound, onLeave, onSwitchTheme }) {
               ))}
             </div>
           )}
+          <button
+            className="btn btn-ghost btn-sm"
+            onClick={() => setShowSettings(true)}
+            style={{ width: '100%', justifyContent: 'center', gap: 6 }}
+          >
+            ⚙️ Game Settings
+            <span style={{ marginLeft: 'auto', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+              {room.settings?.totalRounds ?? 5} rounds · {room.settings?.revealTime ?? 3}s reveal
+            </span>
+          </button>
         </div>
+      )}
+
+      {showSettings && (
+        <SettingsModal
+          settings={room.settings}
+          isHost={room.isHost}
+          onSave={onUpdateSettings}
+          onClose={() => setShowSettings(false)}
+        />
       )}
 
       {/* Actions */}
@@ -121,8 +214,8 @@ function LobbyView({ room, onStartRound, onLeave, onSwitchTheme }) {
           <button
             className="btn btn-primary"
             onClick={onStartRound}
-            //disabled={room.players.length < 1}
-            disabled={room.players.length < 2}
+            disabled={room.players.length < 1}
+            //disabled={room.players.length < 2}
             style={{ opacity: room.players.length < 2 ? 0.5 : 1 }}
           >
             <span>🎮</span>
@@ -374,19 +467,205 @@ function PlayingView({ myColor, wrongGuess, skippedInfo, onSubmitGuess, onSkipGu
   );
 }
 
+// ─── Victory View ─────────────────────────────────────────────────────────────
+
+const CONFETTI = ['🎉', '🎊', '✨', '🌟', '💫', '🎈', '🎀'];
+
+function VictoryView({ room, onResetGame, onLeave }) {
+  const sorted = [...room.players].sort((a, b) => b.score - a.score);
+  const maxScore = Math.max(...sorted.map(p => p.score), 1);
+  const champion = sorted[0];
+  const isWinner = champion?.id === room.myId;
+
+  // Generate stable confetti pieces
+  const confettiPieces = isWinner ? Array.from({ length: 18 }, (_, i) => ({
+    id: i,
+    emoji: CONFETTI[i % CONFETTI.length],
+    left: `${(i * 5.5 + 3) % 100}%`,
+    delay: `${(i * 0.18) % 2}s`,
+    duration: `${2.2 + (i % 5) * 0.4}s`,
+  })) : [];
+
+  return (
+    <div className="page" style={{ justifyContent: 'flex-start', paddingTop: 40, gap: 16 }}>
+
+      {/* Confetti overlay (winner only) */}
+      {isWinner && (
+        <div className="confetti-container">
+          {confettiPieces.map(p => (
+            <span
+              key={p.id}
+              className="confetti-piece"
+              style={{ left: p.left, animationDelay: p.delay, animationDuration: p.duration }}
+            >
+              {p.emoji}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Trophy + Title */}
+      <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+        <div className="victory-trophy">{isWinner ? '🏆' : '🎮'}</div>
+        <p className="victory-title">{isWinner ? 'You Win!' : 'Nice Try!'}</p>
+        <p className="victory-subtitle">
+          {room.settings?.totalRounds ?? 5} rounds complete
+        </p>
+      </div>
+
+      {/* Champion banner */}
+      {champion && (
+        <div className="victory-champion-banner">
+          <div className="victory-champion-emoji">🥇</div>
+          <div>
+            <p className="victory-champion-label">Champion</p>
+            <p className="victory-champion-name">{champion.name}</p>
+          </div>
+          <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+            <p style={{ fontSize: '1.8rem', fontWeight: 900, color: '#5A3E00', lineHeight: 1 }}>{champion.score}</p>
+            <p style={{ fontSize: '0.72rem', fontWeight: 700, color: '#8B6200' }}>points</p>
+          </div>
+        </div>
+      )}
+
+      {/* Final Standings */}
+      <div className="glass fade-in" style={{ padding: '16px', width: '100%' }}>
+        <p style={{ fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 12, paddingLeft: 4 }}>
+          Final Standings
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {sorted.map((player, i) => (
+            <div key={player.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span className={`score-rank rank-${i + 1}`} style={{ minWidth: 28 }}>
+                {i < 3 ? ['🥇', '🥈', '🥉'][i] : `${i + 1}`}
+              </span>
+              <Avatar avatarColor={player.avatarColor} name={player.name} size="sm" />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                  <span className="player-name" style={{ fontSize: '0.88rem' }}>{player.name}</span>
+                  {player.id === room.myId && <span className="badge-you">You</span>}
+                </div>
+                <div className="score-bar-track">
+                  <div
+                    className={`score-bar-fill rank-${i + 1}`}
+                    style={{ width: `${Math.max(4, (player.score / maxScore) * 100)}%` }}
+                  />
+                </div>
+              </div>
+              <span className="player-score" style={{ minWidth: 40, textAlign: 'right' }}>{player.score}pt</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 4 }}>
+        {room.isHost && (
+          <button className="btn btn-primary" onClick={onResetGame}>
+            <span>🔄</span> Play Again
+          </button>
+        )}
+        <button className="btn btn-ghost" onClick={onLeave}>
+          Leave Room
+        </button>
+        {!room.isHost && (
+          <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.82rem', fontWeight: 600, paddingTop: 4 }}>
+            <span className="waiting-dots">Waiting for host<span>·</span><span>·</span><span>·</span></span>
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Round Result View ────────────────────────────────────────────────────────
 
-function ResultView({ roundResult, room, onStartRound, onSwitchTheme }) {
+function ResultView({ roundResult, room, onStartRound, onSwitchTheme, onEndGame }) {
   const [showThemePicker, setShowThemePicker] = useState(false);
   const { winner, character, scores } = roundResult;
   const sortedScores = [...scores].sort((a, b) => b.score - a.score);
+  const totalRounds = room.settings?.totalRounds ?? 5;
+  const isGameOver = room.roundNumber >= totalRounds;
 
   return (
     <div className="page" style={{ justifyContent: 'flex-start', paddingTop: 36, gap: 14 }}>
-      {/* Room code */}
-      <div style={{ alignSelf: 'flex-start', padding: '3px 10px', background: 'rgba(255,255,255,0.07)', borderRadius: 20, border: '1px solid rgba(255,255,255,0.12)' }}>
-        <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.12em' }}>#{room.code}</span>
+
+      {/* Top row: room code + theme icon */}
+      <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ padding: '3px 10px', background: 'rgba(255,255,255,0.07)', borderRadius: 20, border: '1px solid rgba(255,255,255,0.12)' }}>
+          <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.12em' }}>#{room.code}</span>
+        </div>
+        {room.isHost && !isGameOver && (
+          <button
+            onClick={() => setShowThemePicker(true)}
+            style={{
+              width: 34, height: 34, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.55)',
+              border: '1.5px solid rgba(255,255,255,0.8)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '1.1rem', cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(160,120,180,0.1)',
+              transition: 'transform 0.15s, box-shadow 0.15s'
+            }}
+            title="Switch Theme"
+          >
+            🎨
+          </button>
+        )}
       </div>
+
+      {/* Round progress */}
+      <div style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="score-bar-track" style={{ flex: 1 }}>
+          <div
+            className="score-bar-fill"
+            style={{ width: `${(room.roundNumber / totalRounds) * 100}%`, background: isGameOver ? 'linear-gradient(90deg, #FFD700, #F5C842)' : undefined }}
+          />
+        </div>
+        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: isGameOver ? 'var(--accent-deep)' : 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+          {isGameOver ? 'Final Round!' : `Round ${room.roundNumber} / ${totalRounds}`}
+        </span>
+      </div>
+
+      {/* Theme picker popup */}
+      {showThemePicker && (
+        <div className="modal-overlay" onClick={() => setShowThemePicker(false)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <p className="modal-title">🎨 Switch Theme</p>
+              {/* <button
+                onClick={() => setShowThemePicker(false)}
+                style={{ background: 'rgba(200,155,232,0.15)', border: '1.5px solid rgba(200,155,232,0.3)', borderRadius: 20, padding: '4px 12px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', cursor: 'pointer' }}
+              >
+                Done
+              </button> */}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {themeList.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => { onSwitchTheme(t.id); setShowThemePicker(false); }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px 14px', borderRadius: 'var(--radius-md)',
+                    background: room.theme === t.id ? 'linear-gradient(135deg, #C879E8, #9B59B6)' : 'rgba(255,255,255,0.45)',
+                    border: room.theme === t.id ? '2px solid #9B59B6' : '1.5px solid transparent',
+                    cursor: 'pointer', textAlign: 'left', width: '100%',
+                    transition: 'all 0.15s'
+                  }}
+                >
+                  <span style={{ fontSize: '1.4rem' }}>{t.emoji}</span>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontWeight: 700, fontSize: '0.95rem', color: room.theme === t.id ? '#fff' : 'var(--text-primary)', margin: 0 }}>{t.name}</p>
+                    <p style={{ fontSize: '0.75rem', color: room.theme === t.id ? 'rgba(255,255,255,0.75)' : 'var(--text-muted)', margin: 0 }}>{t.description}</p>
+                  </div>
+                  {room.theme === t.id && <span style={{ color: '#fff', fontWeight: 900, fontSize: '1.1rem' }}>✓</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Winner / No winner */}
       <div className="glass fade-in" style={{ padding: '24px 20px', width: '100%', textAlign: 'center' }}>
@@ -417,11 +696,7 @@ function ResultView({ roundResult, room, onStartRound, onSwitchTheme }) {
         <div className="divider" />
         <div className="result-color-chips">
           {character.colors.map((color, i) => (
-            <div
-              key={i}
-              className="result-color-chip"
-              style={{ background: color.hex, color: color.textColor }}
-            >
+            <div key={i} className="result-color-chip" style={{ background: color.hex, color: color.textColor }}>
               {color.name}
             </div>
           ))}
@@ -450,45 +725,21 @@ function ResultView({ roundResult, room, onStartRound, onSwitchTheme }) {
       {/* Actions */}
       <div style={{ width: '100%', paddingTop: 4, display: 'flex', flexDirection: 'column', gap: 10 }}>
         {room.isHost ? (
-          <>
+          isGameOver ? (
+            <button className="btn btn-primary" onClick={onEndGame}>
+              <span>🏆</span> See Final Results
+            </button>
+          ) : (
             <button className="btn btn-primary" onClick={() => onStartRound()}>
               <span>🎮</span> Next Round
             </button>
-            <button
-              className="btn btn-ghost btn-sm"
-              onClick={() => setShowThemePicker(v => !v)}
-              style={{ width: '100%', justifyContent: 'center', gap: 6 }}
-            >
-              🎨 Switch Theme {showThemePicker ? '▲' : '▼'}
-            </button>
-            {showThemePicker && (
-              <div className="glass" style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {themeList.map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => { onSwitchTheme(t.id); setShowThemePicker(false); }}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 10,
-                      padding: '10px 12px', borderRadius: 'var(--radius-sm)',
-                      background: room.theme === t.id ? 'rgba(200,155,232,0.2)' : 'transparent',
-                      border: room.theme === t.id ? '1.5px solid var(--accent)' : '1.5px solid transparent',
-                      cursor: 'pointer', textAlign: 'left', width: '100%'
-                    }}
-                  >
-                    <span style={{ fontSize: '1.2rem' }}>{t.emoji}</span>
-                    <div>
-                      <p style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-primary)', margin: 0 }}>{t.name}</p>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>{t.description}</p>
-                    </div>
-                    {room.theme === t.id && <span style={{ marginLeft: 'auto', color: 'var(--accent)', fontWeight: 700 }}>✓</span>}
-                  </button>
-                ))}
-              </div>
-            )}
-          </>
+          )
         ) : (
           <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.88rem', fontWeight: 600, padding: '12px 0' }}>
-            <span className="waiting-dots">Waiting for host to start next round<span>·</span><span>·</span><span>·</span></span>
+            {isGameOver
+              ? <span>Game over! Waiting for host<span className="waiting-dots"><span>·</span><span>·</span><span>·</span></span></span>
+              : <span className="waiting-dots">Waiting for host to start next round<span>·</span><span>·</span><span>·</span></span>
+            }
           </div>
         )}
       </div>
@@ -523,6 +774,9 @@ export default function GameRoom({
   onSkipGuess,
   onRequestHint,
   onSwitchTheme,
+  onUpdateSettings,
+  onEndGame,
+  onResetGame,
   onLeave
 }) {
   if (gamePhase === 'playing' && myColor) {
@@ -542,6 +796,16 @@ export default function GameRoom({
     );
   }
 
+  if (gamePhase === 'victory') {
+    return (
+      <VictoryView
+        room={room}
+        onResetGame={onResetGame}
+        onLeave={onLeave}
+      />
+    );
+  }
+
   if (gamePhase === 'result' && roundResult) {
     return (
       <ResultView
@@ -549,6 +813,7 @@ export default function GameRoom({
         room={room}
         onStartRound={onStartRound}
         onSwitchTheme={onSwitchTheme}
+        onEndGame={onEndGame}
       />
     );
   }
@@ -558,6 +823,7 @@ export default function GameRoom({
       room={room}
       onStartRound={onStartRound}
       onSwitchTheme={onSwitchTheme}
+      onUpdateSettings={onUpdateSettings}
       onLeave={onLeave}
     />
   );
