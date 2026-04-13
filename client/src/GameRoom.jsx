@@ -19,11 +19,11 @@ function Avatar({ avatarColor, name, size = 'md' }) {
 // ─── Settings Modal ───────────────────────────────────────────────────────────
 
 function SettingsModal({ settings, isHost, onSave, onClose }) {
-  const [totalRounds, setTotalRounds] = useState(settings?.totalRounds ?? 5);
+  const [targetScore, setTargetScore] = useState(settings?.targetScore ?? 5);
   const [revealTime,  setRevealTime]  = useState(settings?.revealTime  ?? 3);
 
   function handleSave() {
-    onSave({ totalRounds, revealTime });
+    onSave({ targetScore, revealTime });
     onClose();
   }
 
@@ -36,18 +36,18 @@ function SettingsModal({ settings, isHost, onSave, onClose }) {
           <p className="modal-title">⚙️ Game Settings</p>
         </div>
 
-        {/* Total Rounds */}
+        {/* Target Score */}
         <div>
-          <p className="modal-section-label">Total Rounds</p>
+          <p className="modal-section-label">Win Condition</p>
           <div className="stepper-row">
             <div className="stepper-label">
-              <p className="stepper-label-text">Rounds to Win</p>
-              <p className="stepper-label-sub">Game ends after this many rounds</p>
+              <p className="stepper-label-text">Points to Win</p>
+              <p className="stepper-label-sub">First player to reach this score wins</p>
             </div>
             <div className="stepper-controls">
-              <button className="stepper-btn" onClick={() => setTotalRounds(v => Math.max(1, v - 1))} disabled={!isHost || totalRounds <= 1}>−</button>
-              <div className="stepper-value">{totalRounds}</div>
-              <button className="stepper-btn" onClick={() => setTotalRounds(v => Math.min(20, v + 1))} disabled={!isHost || totalRounds >= 20}>+</button>
+              <button className="stepper-btn" onClick={() => setTargetScore(v => Math.max(1, v - 1))} disabled={!isHost || targetScore <= 1}>−</button>
+              <div className="stepper-value">{targetScore}</div>
+              <button className="stepper-btn" onClick={() => setTargetScore(v => Math.min(50, v + 1))} disabled={!isHost || targetScore >= 50}>+</button>
             </div>
           </div>
         </div>
@@ -188,7 +188,7 @@ function LobbyView({ room, onStartRound, onLeave, onSwitchTheme, onUpdateSetting
           >
             ⚙️ Game Settings
             <span style={{ marginLeft: 'auto', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-              {room.settings?.totalRounds ?? 5} rounds · {room.settings?.revealTime ?? 3}s reveal
+              First to {room.settings?.targetScore ?? 5} points · {room.settings?.revealTime ?? 3}s reveal
             </span>
           </button>
         </div>
@@ -497,7 +497,7 @@ function VictoryView({ room, onResetGame, onLeave }) {
         <div className="victory-trophy">{isWinner ? '🏆' : '🎮'}</div>
         <p className="victory-title">{isWinner ? 'You Win!' : 'Nice Try!'}</p>
         <p className="victory-subtitle">
-          {room.settings?.totalRounds ?? 5} rounds complete
+          First to {room.settings?.targetScore ?? 5} points wins
         </p>
       </div>
 
@@ -568,12 +568,10 @@ function VictoryView({ room, onResetGame, onLeave }) {
 
 // ─── Round Result View ────────────────────────────────────────────────────────
 
-function ResultView({ roundResult, room, onStartRound, onSwitchTheme, onEndGame }) {
+function ResultView({ roundResult, room, onStartRound, onSwitchTheme }) {
   const [showThemePicker, setShowThemePicker] = useState(false);
   const { winner, character, scores } = roundResult;
   const sortedScores = [...scores].sort((a, b) => b.score - a.score);
-  const totalRounds = room.settings?.totalRounds ?? 5;
-  const isGameOver = room.roundNumber >= totalRounds;
 
   return (
     <div className="page" style={{ justifyContent: 'flex-start', paddingTop: 36, gap: 14 }}>
@@ -583,7 +581,7 @@ function ResultView({ roundResult, room, onStartRound, onSwitchTheme, onEndGame 
         <div style={{ padding: '3px 10px', background: 'rgba(255,255,255,0.07)', borderRadius: 20, border: '1px solid rgba(255,255,255,0.12)' }}>
           <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.12em' }}>#{room.code}</span>
         </div>
-        {room.isHost && !isGameOver && (
+        {room.isHost && (
           <button
             onClick={() => setShowThemePicker(true)}
             style={{
@@ -600,19 +598,6 @@ function ResultView({ roundResult, room, onStartRound, onSwitchTheme, onEndGame 
             🎨
           </button>
         )}
-      </div>
-
-      {/* Round progress */}
-      <div style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div className="score-bar-track" style={{ flex: 1 }}>
-          <div
-            className="score-bar-fill"
-            style={{ width: `${(room.roundNumber / totalRounds) * 100}%`, background: isGameOver ? 'linear-gradient(90deg, #FFD700, #F5C842)' : undefined }}
-          />
-        </div>
-        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: isGameOver ? 'var(--accent-deep)' : 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-          {isGameOver ? 'Final Round!' : `Round ${room.roundNumber} / ${totalRounds}`}
-        </span>
       </div>
 
       {/* Theme picker popup */}
@@ -713,21 +698,12 @@ function ResultView({ roundResult, room, onStartRound, onSwitchTheme, onEndGame 
       {/* Actions */}
       <div style={{ width: '100%', paddingTop: 4, display: 'flex', flexDirection: 'column', gap: 10 }}>
         {room.isHost ? (
-          isGameOver ? (
-            <button className="btn btn-primary" onClick={onEndGame}>
-              <span>🏆</span> See Final Results
-            </button>
-          ) : (
-            <button className="btn btn-primary" onClick={() => onStartRound()}>
-              <span>🎮</span> Next Round
-            </button>
-          )
+          <button className="btn btn-primary" onClick={() => onStartRound()}>
+            <span>🎮</span> Next Round
+          </button>
         ) : (
           <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.88rem', fontWeight: 600, padding: '12px 0' }}>
-            {isGameOver
-              ? <span>Game over! Waiting for host<span className="waiting-dots"><span>·</span><span>·</span><span>·</span></span></span>
-              : <span className="waiting-dots">Waiting for host to start next round<span>·</span><span>·</span><span>·</span></span>
-            }
+            <span className="waiting-dots">Waiting for host to start next round<span>·</span><span>·</span><span>·</span></span>
           </div>
         )}
       </div>
@@ -763,7 +739,6 @@ export default function GameRoom({
   onRequestHint,
   onSwitchTheme,
   onUpdateSettings,
-  onEndGame,
   onResetGame,
   onLeave
 }) {
@@ -800,8 +775,7 @@ export default function GameRoom({
         roundResult={roundResult}
         room={room}
         onStartRound={onStartRound}
-        onSwitchTheme={onSwitchTheme}
-        onEndGame={onEndGame}
+          onSwitchTheme={onSwitchTheme}
       />
     );
   }

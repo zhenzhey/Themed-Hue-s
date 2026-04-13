@@ -199,14 +199,16 @@ export default function App() {
 
     socket.on('game_ended', ({ scores }) => {
       setGamePhase('victory');
-      setRoom(prev => prev ? { ...prev, players: scores } : prev);
+      setRoom(prev => prev ? { ...prev, players: scores, state: 'victory' } : prev);
     });
 
     socket.on('rejoined_room', ({ room: updatedRoom, isHost, gamePhase: phase }) => {
       setRoom({ ...updatedRoom, myId: socket.id, isHost });
       setScreen('room');
       localStorage.setItem('themed-hues-active-room', JSON.stringify({ roomCode: updatedRoom.code }));
-      if (phase === 'round_end') {
+      if (phase === 'victory') {
+        setGamePhase('victory');
+      } else if (phase === 'round_end') {
         setGamePhase('result');
       } else if (phase !== 'playing') {
         // If playing, round_started will be emitted separately by server
@@ -298,12 +300,6 @@ export default function App() {
     socket.emit('update_settings', { roomCode: room.code, ...newSettings });
   }, [room]);
 
-  const endGame = useCallback(() => {
-    const socket = socketRef.current;
-    if (!socket || !room) return;
-    socket.emit('end_game', { roomCode: room.code });
-  }, [room]);
-
   const resetGame = useCallback(() => {
     const socket = socketRef.current;
     if (!socket || !room) return;
@@ -360,7 +356,6 @@ export default function App() {
           onRequestHint={requestHint}
           onSwitchTheme={switchTheme}
           onUpdateSettings={updateSettings}
-          onEndGame={endGame}
           onResetGame={resetGame}
           onLeave={leaveRoom}
         />

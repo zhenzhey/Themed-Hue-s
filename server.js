@@ -840,7 +840,7 @@ io.on('connection', (socket) => {
       autoHintTimer: null,
       roundLockedUntil: 0,
       disconnectedPlayers: new Map(),
-      settings: { totalRounds: 5, revealTime: 3 }
+      settings: { targetScore: 5, revealTime: 3 }
     };
     rooms.set(roomCode, room);
     socket.join(roomCode);
@@ -1001,8 +1001,37 @@ io.on('connection', (socket) => {
     if (isCorrect) {
       const winner = room.players.find(p => p.id === socket.id);
       if (winner) winner.score++;
-      room.state = 'round_end';
+      const targetScore = Math.max(1, Math.min(50, Number(room.settings?.targetScore) || 5));
+      const reachedTarget = !!winner && winner.score >= targetScore;
+      const reachedFinalRound = room.roundNumber >= targetScore;
+      const shouldEndGame = reachedTarget || reachedFinalRound;
+
+      room.state = shouldEndGame ? 'victory' : 'round_end';
       if (room.autoHintTimer) { clearTimeout(room.autoHintTimer); room.autoHintTimer = null; }
+
+      if (shouldEndGame) {
+        const gameWinner = reachedTarget
+          ? winner
+          : room.players.reduce((best, p) => (p.score > (best?.score || -1) ? p : best), null);
+        io.to(roomCode).emit('game_ended', {
+          winner: gameWinner ? { id: gameWinner.id, name: gameWinner.name, avatarColor: gameWinner.avatarColor } : null,
+          character: char,
+          targetScore,
+          scores: room.players.map(p => ({
+            id: p.id,
+            name: p.name,
+            avatarColor: p.avatarColor,
+            score: p.score,
+            isHost: p.isHost
+          }))
+        });
+        if (reachedTarget) {
+          console.log(`${winner?.name} reached ${targetScore} points and won game in ${roomCode}`);
+        } else {
+          console.log(`Room ${roomCode} ended after final round ${room.roundNumber}/${targetScore}`);
+        }
+        return;
+      }
 
       io.to(roomCode).emit('round_ended', {
         winner: winner ? { id: winner.id, name: winner.name, avatarColor: winner.avatarColor } : null,
@@ -1031,8 +1060,29 @@ io.on('connection', (socket) => {
 
     const allSkipped = room.players.every(p => p.skipped);
     if (allSkipped) {
-      room.state = 'round_end';
+      const targetScore = Math.max(1, Math.min(50, Number(room.settings?.targetScore) || 5));
+      const reachedFinalRound = room.roundNumber >= targetScore;
+      room.state = reachedFinalRound ? 'victory' : 'round_end';
       if (room.autoHintTimer) { clearTimeout(room.autoHintTimer); room.autoHintTimer = null; }
+
+      if (reachedFinalRound) {
+        const gameWinner = room.players.reduce((best, p) => (p.score > (best?.score || -1) ? p : best), null);
+        io.to(roomCode).emit('game_ended', {
+          winner: gameWinner ? { id: gameWinner.id, name: gameWinner.name, avatarColor: gameWinner.avatarColor } : null,
+          character: room.currentCharacter,
+          targetScore,
+          scores: room.players.map(p => ({
+            id: p.id,
+            name: p.name,
+            avatarColor: p.avatarColor,
+            score: p.score,
+            isHost: p.isHost
+          }))
+        });
+        console.log(`Room ${roomCode} ended after final round ${room.roundNumber}/${targetScore} (all skipped)`);
+        return;
+      }
+
       io.to(roomCode).emit('round_ended', {
         winner: null,
         character: room.currentCharacter,
@@ -1083,11 +1133,34 @@ io.on('connection', (socket) => {
     console.log(`Room ${roomCode} theme switched to ${theme}`);
   });
 
-  socket.on('update_settings', ({ roomCode, totalRounds, revealTime }) => {
+  socket.on('update_settings', ({ roomCode, targetScore, totalRounds, revealTime }) => {
     const room = rooms.get(roomCode);
     if (!room || room.host !== socket.id) return;
-    room.settings.totalRounds = Math.max(1, Math.min(20, Number(totalRounds) || 5));
+    const currentTarget = Number(room.settings?.targetScore) || 5;
+    const requestedTarget = Number(targetScore) || Number(totalRounds) || currentTarget;
+    room.settings.targetScore = Math.max(1, Math.min(50, requestedTarget));
     room.settings.revealTime  = Math.max(1, Math.min(10, Number(revealTime)  || 3));
+
+    const leader = room.players.reduce((best, p) => (p.score > (best?.score || -1) ? p : best), null);
+    const reachedTarget = !!leader && leader.score >= room.settings.targetScore;
+    if (reachedTarget && room.state !== 'victory') {
+      room.state = 'victory';
+      io.to(roomCode).emit('game_ended', {
+        winner: { id: leader.id, name: leader.name, avatarColor: leader.avatarColor },
+        character: room.currentCharacter,
+        targetScore: room.settings.targetScore,
+        scores: room.players.map(p => ({
+          id: p.id,
+          name: p.name,
+          avatarColor: p.avatarColor,
+          score: p.score,
+          isHost: p.isHost
+        }))
+      });
+      console.log(`Room ${roomCode} auto-ended after settings update at target ${room.settings.targetScore}`);
+      return;
+    }
+
     io.to(roomCode).emit('settings_updated', { room: sanitizeRoom(room) });
     console.log(`Room ${roomCode} settings updated: ${JSON.stringify(room.settings)}`);
   });
@@ -1095,6 +1168,7 @@ io.on('connection', (socket) => {
   socket.on('end_game', ({ roomCode }) => {
     const room = rooms.get(roomCode);
     if (!room || room.host !== socket.id) return;
+    room.state = 'victory';
     io.to(roomCode).emit('game_ended', {
       scores: room.players.map(p => ({
         id: p.id, name: p.name, avatarColor: p.avatarColor,
