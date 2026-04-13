@@ -214,8 +214,8 @@ function LobbyView({ room, onStartRound, onLeave, onSwitchTheme, onUpdateSetting
           <button
             className="btn btn-primary"
             onClick={onStartRound}
-            disabled={room.players.length < 1}
-            //disabled={room.players.length < 2}
+            //disabled={room.players.length < 1}
+            disabled={room.players.length < 2}
             style={{ opacity: room.players.length < 2 ? 0.5 : 1 }}
           >
             <span>🎮</span>
