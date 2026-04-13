@@ -237,7 +237,6 @@ function PlayingView({ myColor, wrongGuess, skippedInfo, onSubmitGuess, onSkipGu
   const [guess, setGuess] = useState('');
   const [skipped, setSkipped] = useState(false);
   const [countdown, setCountdown] = useState(0);
-  const [cooldownSeconds, setCooldownSeconds] = useState(0);
   const inputRef = useRef(null);
 
   const bgColor = myColor?.hex || '#C8A8F8';
@@ -280,17 +279,6 @@ function PlayingView({ myColor, wrongGuess, skippedInfo, onSubmitGuess, onSkipGu
     }
   }, [locked]);
 
-  useEffect(() => {
-    if (!wrongGuess) return;
-    setCooldownSeconds(3);
-    const interval = setInterval(() => {
-      setCooldownSeconds(prev => {
-        if (prev <= 1) { clearInterval(interval); return 0; }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [wrongGuess]);
 
   const sparkles = ['✨', '💫', '⭐', '🌟'];
   const randomSparkle = sparkles[Math.floor(bgColor.charCodeAt(1) % sparkles.length)];
@@ -436,7 +424,7 @@ function PlayingView({ myColor, wrongGuess, skippedInfo, onSubmitGuess, onSkipGu
             value={guess}
             onChange={e => setGuess(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={locked ? 'Get ready…' : cooldownSeconds > 0 ? `Wait ${cooldownSeconds}s before entering...` : 'Type your guess…'}
+            placeholder={locked ? 'Get ready…' : 'Type your guess…'}
             maxLength={40}
             autoComplete="off"
             autoCorrect="off"
