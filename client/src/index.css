@@ -953,3 +953,346 @@ input {
   80%  { opacity: 1; }
   100% { transform: translateY(110vh) rotate(720deg) scale(0.6); opacity: 0; }
 }
+
+/* ─── Tutorial Screen ─────────────────────────────────────────────────────────── */
+
+.tut-overlay {
+  align-items: flex-end;
+}
+
+.tut-card {
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 20px 20px 24px;
+  gap: 16px;
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-md) var(--radius-md);
+}
+
+/* Header row */
+.tut-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tut-step-pill {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+  background: rgba(200, 155, 232, 0.15);
+  border: 1.5px solid rgba(200, 155, 232, 0.35);
+  border-radius: 20px;
+  padding: 4px 12px;
+}
+
+.tut-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(200, 155, 232, 0.12);
+  border: 1.5px solid rgba(200, 155, 232, 0.3);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: var(--font);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tut-close-btn:hover {
+  background: rgba(200, 155, 232, 0.25);
+  color: var(--text-primary);
+}
+
+/* Illustration wrapper */
+.tut-illus-wrap {
+  width: 100%;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, rgba(255,220,240,0.45) 0%, rgba(220,200,255,0.45) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  animation: fadeIn 0.35s ease both;
+}
+
+.tut-illus {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  gap: 16px;
+}
+
+/* ── Step 1: phones grid ── */
+.tut-illus-phones {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.tut-phone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  animation: tutPhonePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes tutPhonePop {
+  from { transform: scale(0.5) translateY(20px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.tut-phone-screen {
+  width: 54px;
+  height: 82px;
+  border-radius: 12px;
+  border: 3px solid rgba(255,255,255,0.85);
+  box-shadow: 0 6px 20px rgba(160,100,200,0.2);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 8px;
+}
+
+.tut-phone-label {
+  font-size: 0.52rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.9);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+/* ── Step 2: timer ── */
+.tut-illus-timer {
+  gap: 20px;
+}
+
+.tut-timer-ring {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 5px solid rgba(200,155,232,0.3);
+  background: conic-gradient(#C879E8 0% 33%, rgba(200,155,232,0.15) 33% 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: tutTimerSpin 3s linear infinite;
+  box-shadow: 0 4px 20px rgba(155,89,182,0.2);
+}
+
+@keyframes tutTimerSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.tut-timer-inner {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: tutTimerSpin 3s linear infinite reverse;
+}
+
+.tut-timer-count {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--accent-deep);
+  line-height: 1;
+}
+
+.tut-timer-sub {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.tut-color-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.tut-swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.9);
+  box-shadow: 0 3px 12px rgba(160,100,200,0.18);
+  animation: tutSwatchPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes tutSwatchPop {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* ── Step 3: guess ── */
+.tut-illus-guess {
+  gap: 14px;
+}
+
+.tut-guess-box {
+  background: rgba(255,255,255,0.85);
+  border: 2px solid rgba(200,155,232,0.5);
+  border-radius: var(--radius-md);
+  padding: 14px 20px;
+  width: 100%;
+  max-width: 220px;
+  box-shadow: 0 4px 16px rgba(155,89,182,0.12);
+}
+
+.tut-guess-cursor {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  animation: tutBlink 1s step-end infinite;
+}
+
+@keyframes tutBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.tut-trophy-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tut-trophy {
+  font-size: 2.4rem;
+  animation: trophyBounce 0.6s cubic-bezier(0.34, 1.6, 0.64, 1) both, sparkleFloat 3s ease-in-out 0.6s infinite;
+}
+
+.tut-lightning {
+  font-size: 1.4rem;
+  animation: tutLightning 1.2s ease-in-out infinite;
+}
+
+@keyframes tutLightning {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 1; }
+  50% { transform: translateY(-6px) scale(1.15); opacity: 0.8; }
+}
+
+.tut-point-badge {
+  background: linear-gradient(135deg, #55E8A0, #27AE60);
+  color: white;
+  font-size: 0.88rem;
+  font-weight: 800;
+  padding: 6px 18px;
+  border-radius: 20px;
+  box-shadow: 0 4px 14px rgba(39,174,96,0.3);
+  animation: fadeIn 0.4s 0.3s ease both;
+}
+
+/* Step text */
+.tut-text {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tut-title {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.tut-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+/* Dot indicators */
+.tut-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.tut-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(200, 155, 232, 0.3);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.tut-dot.active {
+  width: 22px;
+  border-radius: 4px;
+  background: var(--accent-deep);
+}
+
+/* Navigation row */
+.tut-nav {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.tut-back-btn {
+  flex: 0 0 auto;
+  width: auto;
+  padding: 12px 18px;
+  font-size: 0.88rem;
+}
+
+.tut-next-btn {
+  flex: 1;
+}
+
+/* Tutorial trigger button on Home screen */
+.tut-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 20px;
+  background: rgba(200, 155, 232, 0.12);
+  border: 1.5px solid rgba(200, 155, 232, 0.35);
+  color: var(--accent-deep);
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.18s;
+  letter-spacing: 0.01em;
+}
+
+.tut-trigger-btn:hover {
+  background: rgba(200, 155, 232, 0.22);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(155,89,182,0.15);
+}
+
+.tut-trigger-btn:active {
+  transform: scale(0.97);
+}

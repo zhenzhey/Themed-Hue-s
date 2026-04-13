@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { avatarColors, defaultAvatar } from './data/avatarColors';
 import { themeList } from './data/themes';
+import Tutorial from './Tutorial';
 
 function Avatar({ avatarColor, name, size = 'md' }) {
   const initial = (name || '?')[0].toUpperCase();
@@ -16,6 +17,7 @@ function Avatar({ avatarColor, name, size = 'md' }) {
 
 export default function Home({ profile, joinError, onUpdateProfile, onCreateRoom, onJoinRoom, onClearError }) {
   const [view, setView] = useState('main'); // 'main' | 'create' | 'join' | 'editProfile'
+  const [showTutorial, setShowTutorial] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState(themeList[0].id);
   const [joinCode, setJoinCode] = useState('');
   const [editName, setEditName] = useState(profile.name);
@@ -39,7 +41,9 @@ export default function Home({ profile, joinError, onUpdateProfile, onCreateRoom
   }
 
   return (
-    <div className="page" style={{ justifyContent: 'flex-start', paddingTop: 48 }}>
+    <div className="page" style={{ justifyContent: 'flex-start', paddingTop: 48, minHeight: '100dvh' }}>
+      {showTutorial && <Tutorial onClose={() => setShowTutorial(false)} />}
+
       {/* Logo */}
       <div style={{ marginBottom: 8, textAlign: 'center' }}>
         <div style={{ fontSize: '2.8rem', marginBottom: 6 }}>🎨</div>
@@ -190,7 +194,10 @@ export default function Home({ profile, joinError, onUpdateProfile, onCreateRoom
       </div>
 
       {/* Footer */}
-      <div style={{ marginTop: 'auto', paddingTop: 32, textAlign: 'center' }}>
+      <div style={{ marginTop: 'auto', paddingTop: 16, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+        <button className="tut-trigger-btn" onClick={() => setShowTutorial(true)}>
+          ❓ How to Play
+        </button>
         <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
           2–12 players · Requires same network or accessible server
         </p>
