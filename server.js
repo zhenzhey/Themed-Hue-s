@@ -272,7 +272,7 @@ const themes = {
     characters: [
       {
         id: 'elsa', difficulty: 1,
-        name: 'Elsa', hint: 'Frozen',
+        name: 'Elsa', hint: 'Queen with powers that turn fear into winter',
         colors: [
           { name: 'Ice Blue', hex: '#74B9FF', textColor: '#FFFFFF' },
           { name: 'Snow White', hex: '#DFE6E9', textColor: '#4A5568' }
@@ -281,7 +281,7 @@ const themes = {
       },
       {
         id: 'anna', difficulty: 1,
-        name: 'Anna', hint: 'Frozen',
+        name: 'Anna', hint: 'Fearless sister who believes love can thaw anything',
         colors: [
           { name: 'Sky Blue', hex: '#aedfea', textColor: '#FFFFFF' },
           { name: 'Chestnut Brown', hex: '#8B5E3C', textColor: '#FFE4A0' },
@@ -291,7 +291,7 @@ const themes = {
       },
       {
         id: 'cinderella', difficulty: 1,
-        name: 'Cinderella', hint: 'Cinderella',
+        name: 'Cinderella', hint: 'A midnight deadline and a lost glass slipper',
         colors: [
           { name: 'Sky Blue', hex: '#87CEEB', textColor: '#1A5C80' },
           { name: 'Silver', hex: '#B8B8C8', textColor: '#3A3A4A' }
@@ -300,7 +300,7 @@ const themes = {
       },
       {
         id: 'ariel', difficulty: 1,
-        name: 'Ariel', hint: 'The Little Mermaid',
+        name: 'Ariel', hint: 'Voice traded away for a chance to walk on land',
         colors: [
           { name: 'Fiery Red', hex: '#E8403C', textColor: '#FFFFFF' },
           { name: 'Sea Teal', hex: '#2BC0B4', textColor: '#FFFFFF' }
@@ -309,7 +309,7 @@ const themes = {
       },
       {
         id: 'moana', difficulty: 1,
-        name: 'Moana', hint: 'Moana',
+        name: 'Moana', hint: 'Chosen by the ocean to restore a stolen heart',
         colors: [
           { name: 'Coral Red', hex: '#E8484C', textColor: '#FFFFFF' },
           { name: 'Warm Orange', hex: '#FF8C42', textColor: '#FFFFFF' }
@@ -318,7 +318,7 @@ const themes = {
       },
       {
         id: 'mulan', difficulty: 1,
-        name: 'Mulan', hint: 'Mulan',
+        name: 'Mulan', hint: 'Warrior who took her father\'s place in battle',
         colors: [
           { name: 'Dusty Rose', hex: '#FF6B8A', textColor: '#FFFFFF' },
           { name: 'Copper Gold', hex: '#D4AF37', textColor: '#5A3E00' }
@@ -327,7 +327,7 @@ const themes = {
       },
       {
         id: 'belle', difficulty: 1,
-        name: 'Belle', hint: 'Beauty and the Beast',
+        name: 'Belle', hint: 'Book-loving dreamer who saw kindness beneath a curse',
         colors: [
           { name: 'Golden Yellow', hex: '#F5C842', textColor: '#7A5C00' },
           { name: 'Warm Brown', hex: '#8B5E3C', textColor: '#FFE4A0' }
@@ -336,7 +336,7 @@ const themes = {
       },
       {
         id: 'snow_white', difficulty: 1,
-        name: 'Snow White', hint: 'Snow White and the Seven Dwarfs',
+        name: 'Snow White', hint: 'Apple, forest friends, and a jealous mirror',
         colors: [
           { name: 'Crimson Red', hex: '#C41E3A', textColor: '#FFFFFF' },
           { name: 'Royal Blue', hex: '#2445AB', textColor: '#FFFFFF' },
@@ -346,7 +346,7 @@ const themes = {
       },
       {
         id: 'jasmine', difficulty: 2,
-        name: 'Jasmine', hint: 'Aladdin',
+        name: 'Jasmine', hint: 'Princess who wanted freedom beyond palace walls',
         colors: [
           { name: 'Teal', hex: '#20B2AA', textColor: '#FFFFFF' },
           { name: 'Deep Purple', hex: '#6A3D9A', textColor: '#FFFFFF' }
@@ -355,7 +355,7 @@ const themes = {
       },
       {
         id: 'rapunzel', difficulty: 2,
-        name: 'Rapunzel', hint: 'Tangled',
+        name: 'Rapunzel', hint: 'Long magical hair and a tower far from home',
         colors: [
           { name: 'Lilac Purple', hex: '#9B59B6', textColor: '#FFFFFF' },
           { name: 'Blush Pink', hex: '#FF85A1', textColor: '#FFFFFF' }
@@ -364,7 +364,7 @@ const themes = {
       },
       {
         id: 'aurora', difficulty: 2,
-        name: 'Aurora', hint: 'Sleeping Beauty',
+        name: 'Aurora', hint: 'A spindle, a curse, and a century of sleep',
         colors: [
           { name: 'Rose Pink', hex: '#FF9EB5', textColor: '#6B1F35' },
           { name: 'Royal Blue', hex: '#3A5FCD', textColor: '#FFFFFF' }
@@ -373,7 +373,7 @@ const themes = {
       },
       {
         id: 'tiana', difficulty: 2,
-        name: 'Tiana', hint: 'The Princess and the Frog',
+        name: 'Tiana', hint: 'Hardworking chef chasing her own restaurant dream',
         colors: [
           { name: 'Emerald Green', hex: '#27AE60', textColor: '#FFFFFF' },
           { name: 'Warm Gold', hex: '#F39C12', textColor: '#FFFFFF' }
@@ -382,7 +382,7 @@ const themes = {
       },
       {
         id: 'merida', difficulty: 3,
-        name: 'Merida', hint: 'Brave',
+        name: 'Merida', hint: 'Archer princess who refused a fate chosen for her',
         colors: [
           { name: 'Flame Orange', hex: '#E17055', textColor: '#FFFFFF' },
           { name: 'Forest Green', hex: '#00695C', textColor: '#FFFFFF' }
@@ -391,7 +391,7 @@ const themes = {
       },
       {
         id: 'pocahontas', difficulty: 3,
-        name: 'Pocahontas', hint: 'Pocahontas',
+        name: 'Pocahontas', hint: 'Bridge between two worlds, guided by the wind',
         colors: [
           { name: 'Earthy Brown', hex: '#A0522D', textColor: '#FFFFFF' },
           { name: 'Purple', hex: '#8B5CF6', textColor: '#FFFFFF' }
@@ -407,7 +407,7 @@ const themes = {
     characters: [
       {
         id: 'mickey', difficulty: 1,
-        name: 'Mickey Mouse', hint: 'Mickey Mouse Clubhouse',
+        name: 'Mickey Mouse', hint: 'Whistling mascot with round ears and red shorts',
         colors: [
           { name: 'Black', hex: '#2D2D2D', textColor: '#FFFFFF' },
           { name: 'Bright Red', hex: '#D32F2F', textColor: '#FFFFFF' },
@@ -417,7 +417,7 @@ const themes = {
       },
       {
         id: 'minnie', difficulty: 1,
-        name: 'Minnie Mouse', hint: "Minnie's Bow-Toons",
+        name: 'Minnie Mouse', hint: 'Polka-dot bow, heels, and timeless cartoon charm',
         colors: [
           { name: 'Black', hex: '#2D2D2D', textColor: '#FFFFFF' },
           { name: 'Hot Pink', hex: '#E91E63', textColor: '#FFFFFF' }
@@ -426,7 +426,7 @@ const themes = {
       },
       {
         id: 'simba', difficulty: 1,
-        name: 'Simba', hint: 'The Lion King',
+        name: 'Simba', hint: 'Young cub destined to reclaim the pride lands',
         colors: [
           { name: 'Orange Gold', hex: '#FF8F00', textColor: '#FFFFFF' },
           { name: 'Brown', hex: '#6D4C41', textColor: '#FFFFFF' }
@@ -435,7 +435,7 @@ const themes = {
       },
       {
         id: 'donald', difficulty: 2,
-        name: 'Donald Duck', hint: 'Donald Duck',
+        name: 'Donald Duck', hint: 'Short-tempered sailor with a famous quack',
         colors: [
           { name: 'Cobalt Blue', hex: '#1565C0', textColor: '#FFFFFF' },
           { name: 'White', hex: '#F5F5F5', textColor: '#4A4A4A' }
@@ -444,7 +444,7 @@ const themes = {
       },
       {
         id: 'dumbo', difficulty: 2,
-        name: 'Dumbo', hint: 'Dumbo',
+        name: 'Dumbo', hint: 'Circus elephant who learned to fly with giant ears',
         colors: [
           { name: 'Blue Gray', hex: '#90A4AE', textColor: '#FFFFFF' },
           { name: 'Light Pink', hex: '#F48FB1', textColor: '#FFFFFF' }
@@ -453,7 +453,7 @@ const themes = {
       },
       {
         id: 'bambi', difficulty: 3,
-        name: 'Bambi', hint: 'Bambi',
+        name: 'Bambi', hint: 'Forest fawn growing up through the changing seasons',
         colors: [
           { name: 'Light Tan', hex: '#D2A679', textColor: '#5A3A00' },
           { name: 'White', hex: '#F5F5F5', textColor: '#4A4A4A' }
