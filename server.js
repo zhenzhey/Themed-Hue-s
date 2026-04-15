@@ -793,11 +793,17 @@ function pickCharacter(room, themeData) {
 }
 
 function sanitizeRoom(room) {
+  const frozenPhase = room.state === 'round_end' || room.state === 'victory';
+  const snapshotScores = room.leaderboardSnapshot?.scores;
+  const playersForClient = (frozenPhase && Array.isArray(snapshotScores) && snapshotScores.length > 0)
+    ? snapshotScores
+    : room.players;
+
   return {
     code: room.code,
     theme: room.theme,
     host: room.host,
-    players: room.players.map(p => ({
+    players: playersForClient.map(p => ({
       id: p.id,
       name: p.name,
       avatarColor: p.avatarColor,
@@ -1250,6 +1256,11 @@ io.on('connection', (socket) => {
 
     const player = room.players[idx];
     const wasHost = player.isHost;
+
+    // Keep final standings stable while on scoreboard/victory screens.
+    if ((room.state === 'round_end' || room.state === 'victory') && !room.leaderboardSnapshot) {
+      room.leaderboardSnapshot = buildLeaderboardSnapshot(room);
+    }
 
     // Save player data for potential rejoin (60 second grace period)
     const nameKey = player.name.toLowerCase().trim();
