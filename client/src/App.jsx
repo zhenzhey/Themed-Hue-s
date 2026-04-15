@@ -118,6 +118,17 @@ export default function App() {
       setRoom(prev => {
         if (!prev) return null;
         const amHost = room.host === prev.myId;
+        const inFrozenPhase = prev.state === 'round_end' || prev.state === 'victory';
+        const snapshot = room.leaderboardSnapshot || prev.leaderboardSnapshot || null;
+        if (inFrozenPhase && snapshot?.scores?.length) {
+          return {
+            ...room,
+            players: snapshot.scores,
+            leaderboardSnapshot: snapshot,
+            myId: prev.myId,
+            isHost: amHost
+          };
+        }
         return { ...room, myId: prev.myId, isHost: amHost };
       });
     });
@@ -138,13 +149,19 @@ export default function App() {
       setRoom(prev => prev ? { ...prev, state: 'playing', roundNumber } : prev);
     });
 
-    socket.on('round_ended', ({ winner, character, scores }) => {
-      setRoundResult({ winner, character, scores });
+    socket.on('round_ended', ({ winner, character, scores, timestamp }) => {
+      setRoundResult({ winner, character, scores, timestamp });
       setGamePhase('result');
       setRoom(prev => {
         if (!prev) return null;
         const amHost = prev.host === prev.myId;
-        return { ...prev, state: 'round_end', players: scores, isHost: amHost };
+        return {
+          ...prev,
+          state: 'round_end',
+          players: scores,
+          leaderboardSnapshot: { timestamp: timestamp || Date.now(), scores },
+          isHost: amHost
+        };
       });
     });
 
@@ -197,9 +214,17 @@ export default function App() {
       });
     });
 
-    socket.on('game_ended', ({ scores }) => {
+    socket.on('game_ended', ({ scores, timestamp }) => {
       setGamePhase('victory');
-      setRoom(prev => prev ? { ...prev, players: scores, state: 'victory' } : prev);
+      setRoom(prev => prev
+        ? {
+            ...prev,
+            players: scores,
+            state: 'victory',
+            leaderboardSnapshot: { timestamp: timestamp || Date.now(), scores }
+          }
+        : prev
+      );
     });
 
     socket.on('rejoined_room', ({ room: updatedRoom, isHost, gamePhase: phase }) => {

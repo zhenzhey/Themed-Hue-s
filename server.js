@@ -806,8 +806,21 @@ function sanitizeRoom(room) {
     })),
     state: room.state,
     roundNumber: room.roundNumber,
-    settings: room.settings
+    settings: room.settings,
+    leaderboardSnapshot: room.leaderboardSnapshot || null
   };
+}
+
+function buildLeaderboardSnapshot(room) {
+  const timestamp = Date.now();
+  const scores = room.players.map(p => ({
+    id: p.id,
+    name: p.name,
+    avatarColor: p.avatarColor,
+    score: p.score,
+    isHost: p.isHost
+  }));
+  return { timestamp, scores };
 }
 
 // ─── Socket Events ────────────────────────────────────────────────────────────
@@ -840,7 +853,8 @@ io.on('connection', (socket) => {
       autoHintTimer: null,
       roundLockedUntil: 0,
       disconnectedPlayers: new Map(),
-      settings: { targetScore: 5, revealTime: 3 }
+      settings: { targetScore: 5, revealTime: 3 },
+      leaderboardSnapshot: null
     };
     rooms.set(roomCode, room);
     socket.join(roomCode);
@@ -951,6 +965,7 @@ io.on('connection', (socket) => {
     room.state = 'playing';
     room.roundNumber++;
     room.hintRevealed = false;
+    room.leaderboardSnapshot = null;
     room.roundLockedUntil = Date.now() + (room.settings?.revealTime || 3) * 1000;
     room.players.forEach(p => { p.skipped = false; p.hintRevealed = false; });
     room.colorAssignments = {};
@@ -1010,32 +1025,24 @@ io.on('connection', (socket) => {
 
       if (shouldEndGame) {
         const gameWinner = winner;
+        room.leaderboardSnapshot = buildLeaderboardSnapshot(room);
         io.to(roomCode).emit('game_ended', {
           winner: gameWinner ? { id: gameWinner.id, name: gameWinner.name, avatarColor: gameWinner.avatarColor } : null,
           character: char,
           targetScore,
-          scores: room.players.map(p => ({
-            id: p.id,
-            name: p.name,
-            avatarColor: p.avatarColor,
-            score: p.score,
-            isHost: p.isHost
-          }))
+          timestamp: room.leaderboardSnapshot.timestamp,
+          scores: room.leaderboardSnapshot.scores
         });
         console.log(`${winner?.name} reached ${targetScore} points and won game in ${roomCode}`);
         return;
       }
 
+      room.leaderboardSnapshot = buildLeaderboardSnapshot(room);
       io.to(roomCode).emit('round_ended', {
         winner: winner ? { id: winner.id, name: winner.name, avatarColor: winner.avatarColor } : null,
         character: char,
-        scores: room.players.map(p => ({
-          id: p.id,
-          name: p.name,
-          avatarColor: p.avatarColor,
-          score: p.score,
-          isHost: p.isHost
-        }))
+        timestamp: room.leaderboardSnapshot.timestamp,
+        scores: room.leaderboardSnapshot.scores
       });
       console.log(`${winner?.name} won round ${room.roundNumber} with "${guess}"`);
     } else {
@@ -1055,17 +1062,13 @@ io.on('connection', (socket) => {
     if (allSkipped) {
       room.state = 'round_end';
       if (room.autoHintTimer) { clearTimeout(room.autoHintTimer); room.autoHintTimer = null; }
+      room.leaderboardSnapshot = buildLeaderboardSnapshot(room);
 
       io.to(roomCode).emit('round_ended', {
         winner: null,
         character: room.currentCharacter,
-        scores: room.players.map(p => ({
-          id: p.id,
-          name: p.name,
-          avatarColor: p.avatarColor,
-          score: p.score,
-          isHost: p.isHost
-        }))
+        timestamp: room.leaderboardSnapshot.timestamp,
+        scores: room.leaderboardSnapshot.scores
       });
     } else {
       io.to(roomCode).emit('player_skipped', {
@@ -1118,17 +1121,13 @@ io.on('connection', (socket) => {
     const reachedTarget = !!leader && leader.score >= room.settings.targetScore;
     if (reachedTarget && room.state !== 'victory') {
       room.state = 'victory';
+      room.leaderboardSnapshot = buildLeaderboardSnapshot(room);
       io.to(roomCode).emit('game_ended', {
         winner: { id: leader.id, name: leader.name, avatarColor: leader.avatarColor },
         character: room.currentCharacter,
         targetScore: room.settings.targetScore,
-        scores: room.players.map(p => ({
-          id: p.id,
-          name: p.name,
-          avatarColor: p.avatarColor,
-          score: p.score,
-          isHost: p.isHost
-        }))
+        timestamp: room.leaderboardSnapshot.timestamp,
+        scores: room.leaderboardSnapshot.scores
       });
       console.log(`Room ${roomCode} auto-ended after settings update at target ${room.settings.targetScore}`);
       return;
@@ -1142,11 +1141,10 @@ io.on('connection', (socket) => {
     const room = rooms.get(roomCode);
     if (!room || room.host !== socket.id) return;
     room.state = 'victory';
+    room.leaderboardSnapshot = buildLeaderboardSnapshot(room);
     io.to(roomCode).emit('game_ended', {
-      scores: room.players.map(p => ({
-        id: p.id, name: p.name, avatarColor: p.avatarColor,
-        score: p.score, isHost: p.isHost
-      }))
+      timestamp: room.leaderboardSnapshot.timestamp,
+      scores: room.leaderboardSnapshot.scores
     });
     console.log(`Game ended in room ${roomCode}`);
   });
@@ -1162,6 +1160,7 @@ io.on('connection', (socket) => {
     room.colorAssignmentsByName = {};
     room.usedCharacterIds.clear();
     room.hintRevealed = false;
+    room.leaderboardSnapshot = null;
     if (room.autoHintTimer) { clearTimeout(room.autoHintTimer); room.autoHintTimer = null; }
     io.to(roomCode).emit('returned_to_scoreboard', { room: sanitizeRoom(room) });
     console.log(`Game reset in room ${roomCode}`);
@@ -1286,16 +1285,12 @@ io.on('connection', (socket) => {
     if (room.state === 'playing' && room.players.every(p => p.skipped)) {
       room.state = 'round_end';
       if (room.autoHintTimer) { clearTimeout(room.autoHintTimer); room.autoHintTimer = null; }
+      room.leaderboardSnapshot = buildLeaderboardSnapshot(room);
       io.to(roomCode).emit('round_ended', {
         winner: null,
         character: room.currentCharacter,
-        scores: room.players.map(p => ({
-          id: p.id,
-          name: p.name,
-          avatarColor: p.avatarColor,
-          score: p.score,
-          isHost: p.isHost
-        }))
+        timestamp: room.leaderboardSnapshot.timestamp,
+        scores: room.leaderboardSnapshot.scores
       });
       return;
     }
