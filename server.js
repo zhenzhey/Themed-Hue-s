@@ -1003,16 +1003,13 @@ io.on('connection', (socket) => {
       if (winner) winner.score++;
       const targetScore = Math.max(1, Math.min(50, Number(room.settings?.targetScore) || 5));
       const reachedTarget = !!winner && winner.score >= targetScore;
-      const reachedFinalRound = room.roundNumber >= targetScore;
-      const shouldEndGame = reachedTarget || reachedFinalRound;
+      const shouldEndGame = reachedTarget;
 
       room.state = shouldEndGame ? 'victory' : 'round_end';
       if (room.autoHintTimer) { clearTimeout(room.autoHintTimer); room.autoHintTimer = null; }
 
       if (shouldEndGame) {
-        const gameWinner = reachedTarget
-          ? winner
-          : room.players.reduce((best, p) => (p.score > (best?.score || -1) ? p : best), null);
+        const gameWinner = winner;
         io.to(roomCode).emit('game_ended', {
           winner: gameWinner ? { id: gameWinner.id, name: gameWinner.name, avatarColor: gameWinner.avatarColor } : null,
           character: char,
@@ -1025,11 +1022,7 @@ io.on('connection', (socket) => {
             isHost: p.isHost
           }))
         });
-        if (reachedTarget) {
-          console.log(`${winner?.name} reached ${targetScore} points and won game in ${roomCode}`);
-        } else {
-          console.log(`Room ${roomCode} ended after final round ${room.roundNumber}/${targetScore}`);
-        }
+        console.log(`${winner?.name} reached ${targetScore} points and won game in ${roomCode}`);
         return;
       }
 
@@ -1060,28 +1053,8 @@ io.on('connection', (socket) => {
 
     const allSkipped = room.players.every(p => p.skipped);
     if (allSkipped) {
-      const targetScore = Math.max(1, Math.min(50, Number(room.settings?.targetScore) || 5));
-      const reachedFinalRound = room.roundNumber >= targetScore;
-      room.state = reachedFinalRound ? 'victory' : 'round_end';
+      room.state = 'round_end';
       if (room.autoHintTimer) { clearTimeout(room.autoHintTimer); room.autoHintTimer = null; }
-
-      if (reachedFinalRound) {
-        const gameWinner = room.players.reduce((best, p) => (p.score > (best?.score || -1) ? p : best), null);
-        io.to(roomCode).emit('game_ended', {
-          winner: gameWinner ? { id: gameWinner.id, name: gameWinner.name, avatarColor: gameWinner.avatarColor } : null,
-          character: room.currentCharacter,
-          targetScore,
-          scores: room.players.map(p => ({
-            id: p.id,
-            name: p.name,
-            avatarColor: p.avatarColor,
-            score: p.score,
-            isHost: p.isHost
-          }))
-        });
-        console.log(`Room ${roomCode} ended after final round ${room.roundNumber}/${targetScore} (all skipped)`);
-        return;
-      }
 
       io.to(roomCode).emit('round_ended', {
         winner: null,
