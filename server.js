@@ -602,7 +602,7 @@ const themes = {
         name: 'Five Guys', hint: 'Free Peanuts',
         colors: [
           { name: 'Dark Red', hex: '#CE2029', textColor: '#FFFFFF' },
-          { name: 'Bright Yellow', hex: '#FFD100', textColor: '#5A4000' }
+          { name: 'Ceramic White', hex: '#FFFFFF', textColor: '#CE2029' }
         ],
         acceptedNames: ['five guys', 'fiveguys', '5 guys']
       },
